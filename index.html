@@ -118,14 +118,12 @@
       <p id="calendar-selected-date" style="font-weight:bold"></p>
       <label for="event-title">عنوان رویداد یا جلسه</label>
       <input id="event-title" placeholder="مثلاً جلسه کاری">
-      <label for="event-time-display">ساعت جلسه</label>
-      <button id="open-analog-clock" class="secondary" type="button">🕒 انتخاب ساعت با ساعت آنالوگ</button>
-      <input id="event-time-display" value="انتخاب نشده" readonly aria-label="ساعت انتخاب‌شده">
-      <input id="event-time" type="hidden">
+      <label for="event-time">ساعت جلسه</label>
+      <input id="event-time" type="time" step="60" aria-label="انتخاب ساعت جلسه" required>
+      <p class="muted">برای انتخاب ساعت، روی فیلد بالا بزن؛ در گوشی، صفحهٔ ساعت آنالوگ خود مرورگر باز می‌شود.</p>
       <button id="event-add" type="button">ثبت رویداد در تاریخ انتخاب‌شده</button>
       <div id="calendar-events"></div>
       <p id="calendar-status" class="muted" role="status" aria-live="polite"></p>
-      <div id="clock-picker" class="clock-overlay" aria-hidden="true"><div class="clock-card" role="dialog" aria-modal="true" aria-labelledby="clock-picker-title"><h3 id="clock-picker-title">انتخاب ساعت جلسه</h3><p id="clock-value">۱۲:۰۰</p><button id="clock-ampm" class="secondary" type="button">صبح / بعدازظهر: صبح</button><p class="muted">ابتدا ساعت را روی صفحه انتخاب کنید، سپس دقیقه را برگزینید.</p><div id="clock-face" class="clock-face"></div><div class="minute-grid" id="minute-grid"></div><button id="clock-confirm" type="button">تأیید ساعت</button><button id="clock-cancel" class="secondary" type="button">انصراف</button></div></div>
     </section>
 
   </main>
@@ -310,30 +308,12 @@
   el("calendar-next-year").onclick=()=>{month.setDate(1);month.setFullYear(month.getFullYear()+1);renderCalendar()};
   el("event-add").onclick=()=>{
     const title=el("event-title").value.trim();if(!title){el("calendar-status").textContent="لطفاً عنوان رویداد را وارد کنید.";el("event-title").focus();return}
-    events.unshift({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),title,date:iso(selected),time:el("event-time").value||""});
-    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("event-time-display").value="انتخاب نشده";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
+    if(!el("event-time").value){el("calendar-status").textContent="لطفاً ساعت جلسه را انتخاب کنید.";el("event-time").focus();return}
+    events.unshift({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),title,date:iso(selected),time:el("event-time").value});
+    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
     catch{el("calendar-status").textContent="ذخیره انجام نشد؛ فضای ذخیره‌سازی مرورگر را بررسی کنید."}
   };
-  // Interactive analog-style time picker for calendar events.
-  let chosenHour = 12, chosenMinute = 0, chosenPM = false;
-  const faNum = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
-  function refreshClockValue(){const h24=(chosenHour%12)+(chosenPM?12:0);el("clock-value").textContent=faNum(String(h24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0"));el("clock-ampm").textContent="حالت: "+(chosenPM?"بعدازظهر / شب":"صبح");}
-  function buildClock(){
-    const face=el("clock-face"); face.replaceChildren();
-    for(let h=1;h<=12;h++){
-      const angle=(h*30-90)*Math.PI/180, r=40;
-      const b=document.createElement("button"); b.type="button"; b.textContent=faNum(h);
-      b.style.left=(50+r*Math.cos(angle))+"%"; b.style.top=(50+r*Math.sin(angle))+"%";
-      if(chosenHour%12===h%12)b.classList.add("selected");
-      b.onclick=()=>{chosenHour=h===12?12:h; refreshClockValue(); buildClock()}; face.append(b);
-    }
-    const mg=el("minute-grid");mg.replaceChildren();
-    for(let m=0;m<60;m+=5){const b=document.createElement("button");b.type="button";b.textContent=faNum(String(m).padStart(2,"0"));if(chosenMinute===m)b.classList.add("selected");b.onclick=()=>{chosenMinute=m;refreshClockValue();buildClock()};mg.append(b)}
-  }
-  el("open-analog-clock").onclick=()=>{const v=el("event-time").value;if(v&&/^\d{2}:\d{2}$/.test(v)){const hh=Number(v.slice(0,2));chosenPM=hh>=12;chosenHour=hh%12||12;chosenMinute=Math.round(Number(v.slice(3))/5)*5%60;}else{const n=new Date();chosenPM=n.getHours()>=12;chosenHour=n.getHours()%12||12;chosenMinute=Math.round(n.getMinutes()/5)*5%60;}refreshClockValue();buildClock();el("clock-picker").classList.add("open");el("clock-picker").setAttribute("aria-hidden","false")};
-  el("clock-ampm").onclick=()=>{chosenPM=!chosenPM;refreshClockValue()};
-  el("clock-confirm").onclick=()=>{const hour24=(chosenHour%12)+(chosenPM?12:0);el("event-time").value=String(hour24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0");el("event-time-display").value=faNum(String(hour24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0"));el("clock-picker").classList.remove("open");el("clock-picker").setAttribute("aria-hidden","true")};
-  el("clock-cancel").onclick=()=>{el("clock-picker").classList.remove("open");el("clock-picker").setAttribute("aria-hidden","true")};
+  // Use the device/browser native time picker; Android Chrome presents its analog clock UI.
   renderCalendar();renderEvents();
 })();
 </script>
