@@ -61,6 +61,17 @@
     .item button { width: auto; padding: 8px 12px; margin-left: 5px; }
     .muted { color: #64748b; font-size: 13px; }
     #status { font-size: 13px; color: #087f8c; }
+  .day-cell { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; line-height:1.1; min-height:48px; }
+  .day-cell .gregorian { font-size:9px; opacity:.78; direction:ltr; }
+  .clock-overlay { display:none; position:fixed; inset:0; z-index:100001; background:#0a19235c; align-items:center; justify-content:center; padding:16px; }
+  .clock-overlay.open { display:flex; }
+  .clock-card { width:min(390px,100%); max-height:90vh; overflow:auto; background:white; border-radius:18px; padding:18px; text-align:center; box-shadow:0 12px 42px #0004; }
+  .clock-face { width:min(280px,75vw); aspect-ratio:1; border-radius:50%; border:2px solid #b8cbd4; margin:12px auto; position:relative; background:radial-gradient(circle,#fff 58%,#eaf2f5 59%); }
+  .clock-face button { position:absolute; width:36px; height:36px; padding:0; margin:0; border-radius:50%; transform:translate(-50%,-50%); background:transparent; color:#183244; font-size:14px; }
+  .clock-face button.selected { background:#087f8c; color:white; }
+  .minute-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+  .minute-grid button { padding:8px 2px; margin:0; font-size:12px; }
+  .minute-grid button.selected { background:#123b52; }
   </style>
 </head>
 <body>
@@ -97,19 +108,24 @@
       <h2>تقویم شمسی و رویدادها</h2>
       <p class="muted">تاریخ‌ها شمسی نمایش داده می‌شوند. رویدادها در همین مرورگر ذخیره می‌شوند.</p>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="calendar-prev-year" class="secondary" type="button" style="width:auto;flex:1">سال قبل</button>
         <button id="calendar-prev" class="secondary" type="button" style="width:auto;flex:1">ماه قبل</button>
         <strong id="calendar-month-title" style="flex:2;text-align:center"></strong>
         <button id="calendar-next" class="secondary" type="button" style="width:auto;flex:1">ماه بعد</button>
+        <button id="calendar-next-year" class="secondary" type="button" style="width:auto;flex:1">سال بعد</button>
       </div>
       <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px"></div>
       <p id="calendar-selected-date" style="font-weight:bold"></p>
       <label for="event-title">عنوان رویداد یا جلسه</label>
       <input id="event-title" placeholder="مثلاً جلسه کاری">
-      <label for="event-time">ساعت (اختیاری)</label>
-      <input id="event-time" type="time">
+      <label for="event-time-display">ساعت جلسه</label>
+      <button id="open-analog-clock" class="secondary" type="button">🕒 انتخاب ساعت با ساعت آنالوگ</button>
+      <input id="event-time-display" value="انتخاب نشده" readonly aria-label="ساعت انتخاب‌شده">
+      <input id="event-time" type="hidden">
       <button id="event-add" type="button">ثبت رویداد در تاریخ انتخاب‌شده</button>
       <div id="calendar-events"></div>
       <p id="calendar-status" class="muted" role="status" aria-live="polite"></p>
+      <div id="clock-picker" class="clock-overlay" aria-hidden="true"><div class="clock-card" role="dialog" aria-modal="true" aria-labelledby="clock-picker-title"><h3 id="clock-picker-title">انتخاب ساعت جلسه</h3><p id="clock-value">۱۲:۰۰</p><button id="clock-ampm" class="secondary" type="button">صبح / بعدازظهر: صبح</button><p class="muted">ابتدا ساعت را روی صفحه انتخاب کنید، سپس دقیقه را برگزینید.</p><div id="clock-face" class="clock-face"></div><div class="minute-grid" id="minute-grid"></div><button id="clock-confirm" type="button">تأیید ساعت</button><button id="clock-cancel" class="secondary" type="button">انصراف</button></div></div>
     </section>
 
   </main>
@@ -269,7 +285,7 @@
     for(let i=0;i<42;i++){
       const d=new Date(start);d.setDate(start.getDate()+i);
       const b=document.createElement("button");b.type="button";b.style.cssText="margin:0;padding:7px 1px;min-height:40px;font-size:12px";
-      const day=parts(d).day, has=events.some(e=>e.date===iso(d));b.textContent=day+(has?" •":"");
+      const day=parts(d).day, has=events.some(e=>e.date===iso(d));b.innerHTML="";const jal=document.createElement("span");jal.textContent=day+(has?" •":"");const greg=document.createElement("span");greg.className="gregorian";greg.textContent=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getFullYear()).slice(-2);b.append(jal,greg);b.classList.add("day-cell");
       b.style.background=iso(d)===iso(selected)?"#123b52":(sameMonth(d,month)?"#e2edf2":"#f1f5f9");
       b.style.color=iso(d)===iso(selected)?"white":"#183244";
       b.style.opacity=sameMonth(d,month)?"1":".5";
@@ -290,12 +306,34 @@
   }
   el("calendar-prev").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()-1);renderCalendar()};
   el("calendar-next").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()+1);renderCalendar()};
+  el("calendar-prev-year").onclick=()=>{month.setDate(1);month.setFullYear(month.getFullYear()-1);renderCalendar()};
+  el("calendar-next-year").onclick=()=>{month.setDate(1);month.setFullYear(month.getFullYear()+1);renderCalendar()};
   el("event-add").onclick=()=>{
     const title=el("event-title").value.trim();if(!title){el("calendar-status").textContent="لطفاً عنوان رویداد را وارد کنید.";el("event-title").focus();return}
     events.unshift({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),title,date:iso(selected),time:el("event-time").value||""});
-    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
+    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("event-time-display").value="انتخاب نشده";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
     catch{el("calendar-status").textContent="ذخیره انجام نشد؛ فضای ذخیره‌سازی مرورگر را بررسی کنید."}
   };
+  // Interactive analog-style time picker for calendar events.
+  let chosenHour = 12, chosenMinute = 0, chosenPM = false;
+  const faNum = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
+  function refreshClockValue(){const h24=(chosenHour%12)+(chosenPM?12:0);el("clock-value").textContent=faNum(String(h24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0"));el("clock-ampm").textContent="حالت: "+(chosenPM?"بعدازظهر / شب":"صبح");}
+  function buildClock(){
+    const face=el("clock-face"); face.replaceChildren();
+    for(let h=1;h<=12;h++){
+      const angle=(h*30-90)*Math.PI/180, r=40;
+      const b=document.createElement("button"); b.type="button"; b.textContent=faNum(h);
+      b.style.left=(50+r*Math.cos(angle))+"%"; b.style.top=(50+r*Math.sin(angle))+"%";
+      if(chosenHour%12===h%12)b.classList.add("selected");
+      b.onclick=()=>{chosenHour=h===12?12:h; refreshClockValue(); buildClock()}; face.append(b);
+    }
+    const mg=el("minute-grid");mg.replaceChildren();
+    for(let m=0;m<60;m+=5){const b=document.createElement("button");b.type="button";b.textContent=faNum(String(m).padStart(2,"0"));if(chosenMinute===m)b.classList.add("selected");b.onclick=()=>{chosenMinute=m;refreshClockValue();buildClock()};mg.append(b)}
+  }
+  el("open-analog-clock").onclick=()=>{const v=el("event-time").value;if(v&&/^\d{2}:\d{2}$/.test(v)){const hh=Number(v.slice(0,2));chosenPM=hh>=12;chosenHour=hh%12||12;chosenMinute=Math.round(Number(v.slice(3))/5)*5%60;}else{const n=new Date();chosenPM=n.getHours()>=12;chosenHour=n.getHours()%12||12;chosenMinute=Math.round(n.getMinutes()/5)*5%60;}refreshClockValue();buildClock();el("clock-picker").classList.add("open");el("clock-picker").setAttribute("aria-hidden","false")};
+  el("clock-ampm").onclick=()=>{chosenPM=!chosenPM;refreshClockValue()};
+  el("clock-confirm").onclick=()=>{const hour24=(chosenHour%12)+(chosenPM?12:0);el("event-time").value=String(hour24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0");el("event-time-display").value=faNum(String(hour24).padStart(2,"0")+":"+String(chosenMinute).padStart(2,"0"));el("clock-picker").classList.remove("open");el("clock-picker").setAttribute("aria-hidden","true")};
+  el("clock-cancel").onclick=()=>{el("clock-picker").classList.remove("open");el("clock-picker").setAttribute("aria-hidden","true")};
   renderCalendar();renderEvents();
 })();
 </script>
@@ -454,7 +492,7 @@
   <p class="muted">برای دریافت هشدار، این صفحه باید باز باشد. مرورگر ممکن است هنگام خواب دستگاه یا غیرفعال بودن صفحه، هشدار را با تأخیر نمایش دهد.</p>
   <button id="enable-reminder-notifications" type="button">فعال‌کردن اعلان‌های مرورگر</button>
   <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
-  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها هنگام باز بودن صفحه بررسی می‌شوند؛ در صورت تأخیر مرورگر، تا ۱۰ دقیقه پس از موعد هم بررسی می‌شوند.</p>
+  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها با باز بودن صفحه بررسی می‌شوند؛ پس از بازگشت از خواب یا تعویض تب نیز موعدهای ازدست‌رفته تا ۱۲ ساعت اخیر بررسی می‌شوند.</p>
 </section>
 <div id="reminder-alert" role="alertdialog" aria-modal="true" aria-labelledby="reminder-alert-title" aria-describedby="reminder-alert-message">
   <div class="alert-card">
@@ -518,7 +556,7 @@
     }
     try {
       const permission = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
-      if (permission === "granted") { status("اعلان‌های مرورگر فعال هستند."); return true; }
+      if (permission === "granted") { status("اعلان‌های مرورگر فعال هستند. برای صدای هشدار، دکمهٔ آزمایش اعلان را یک بار بزنید تا مرورگر اجازهٔ پخش صدا را بدهد."); return true; }
       status("اجازه اعلان داده نشد. از تنظیمات سایت در مرورگر، اعلان‌ها را مجاز کنید.");
       return false;
     } catch {
@@ -545,7 +583,7 @@
   }
   function checkReminders() {
     const now = Date.now();
-    const windowMs = 10 * 60 * 1000; // تاخیر بررسی مرورگر را تا ۱۰ دقیقه جبران می‌کند
+    const windowMs = 12 * 60 * 60 * 1000; // اگر تب موقتاً متوقف شد، یادآوری‌های همان ۱۲ ساعت اخیر را هم بازیابی می‌کند
     let tasks = [], events = [];
     try { tasks = JSON.parse(localStorage.getItem("secretary_tasks") || "[]"); if (!Array.isArray(tasks)) tasks = []; } catch {}
     try { events = JSON.parse(localStorage.getItem("secretary_events") || "[]"); if (!Array.isArray(events)) events = []; } catch {}
@@ -574,6 +612,7 @@
   window.addEventListener("focus", checkReminders);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkReminders(); });
   $("test-reminder-notification").addEventListener("click", async () => {
+    try { const Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { audioContext = audioContext || new Ctx(); await audioContext.resume(); playGentleChime(); } } catch {}
     const allowed = await requestPermission();
     const title = "این یک اعلان آزمایشی است.";
     if (allowed) {
@@ -585,7 +624,7 @@
   });
   if ("Notification" in window && Notification.permission === "granted") status("اجازه اعلان مرورگر فعال است؛ یادآوری‌ها در حال بررسی‌اند.");
   checkReminders();
-  window.setInterval(checkReminders, 15000);
+  window.setInterval(checkReminders, 5000);
 })();
 </script>
 
