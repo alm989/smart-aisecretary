@@ -1,797 +1,110 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123b52">
-  <title>منشی هوشمند</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial, sans-serif;
-      background: #f1f5f9;
-      color: #183244;
-    }
-    header {
-      background: #123b52;
-      color: white;
-      padding: 24px 16px;
-      text-align: center;
-    }
-    header h1 { margin: 0 0 8px; font-size: 25px; }
-    header p { margin: 0; font-size: 14px; }
-    main { max-width: 700px; margin: auto; padding: 16px; }
-    section {
-      background: white;
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 3px 12px #1020300d;
-    }
-    h2 { font-size: 18px; margin-top: 0; }
-    input, textarea, button {
-      width: 100%;
-      font: inherit;
-      border-radius: 9px;
-      padding: 12px;
-      margin: 6px 0;
-    }
-    input, textarea {
-      border: 1px solid #cbd5e1;
-      background: white;
-    }
-    textarea { min-height: 100px; resize: vertical; }
-    button {
-      border: 0;
-      background: #087f8c;
-      color: white;
-      cursor: pointer;
-    }
-    button.secondary { background: #e2edf2; color: #183244; }
-    .item {
-      padding: 12px;
-      margin-top: 8px;
-      border: 1px solid #e2e8f0;
-      border-radius: 9px;
-      overflow-wrap: anywhere;
-    }
-    .item.done { opacity: .65; text-decoration: line-through; }
-    .item button { width: auto; padding: 8px 12px; margin-left: 5px; }
-    .muted { color: #64748b; font-size: 13px; }
-    #status { font-size: 13px; color: #087f8c; }
-  .day-cell { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; line-height:1.1; min-height:48px; }
-  .day-cell .gregorian { font-size:9px; opacity:.78; direction:ltr; }
-  .clock-overlay { display:none; position:fixed; inset:0; z-index:100001; background:#0a19235c; align-items:center; justify-content:center; padding:16px; }
-  .clock-overlay.open { display:flex; }
-  .clock-card { width:min(390px,100%); max-height:90vh; overflow:auto; background:white; border-radius:18px; padding:18px; text-align:center; box-shadow:0 12px 42px #0004; }
-  .clock-face { width:min(280px,75vw); aspect-ratio:1; border-radius:50%; border:2px solid #b8cbd4; margin:12px auto; position:relative; background:radial-gradient(circle,#fff 58%,#eaf2f5 59%); }
-  .clock-face button { position:absolute; width:36px; height:36px; padding:0; margin:0; border-radius:50%; transform:translate(-50%,-50%); background:transparent; color:#183244; font-size:14px; }
-  .clock-face button.selected { background:#087f8c; color:white; }
-  .minute-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
-  .minute-grid button { padding:8px 2px; margin:0; font-size:12px; }
-  .minute-grid button.selected { background:#123b52; }
-  .clock-digital { font-size:42px; letter-spacing:2px; font-variant-numeric:tabular-nums; background:#123b52; color:#fff; padding:12px; border-radius:12px; margin:10px 0; direction:ltr; }
-  #analog-clock-face { background:radial-gradient(circle,#f8fbfc 0%,#eaf2f5 72%,#d7e5eb 100%); border-color:#b8cbd4; touch-action:manipulation; }
-  #analog-clock-face button { width:34px; height:34px; font-size:12px; background:transparent; color:#183244; border:0; }
-  #analog-clock-face button { z-index:3; }
-  #analog-clock-face button.selected { background:#087f8c; color:white; z-index:3; }
-  .clock-hands-svg { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; overflow:visible; }
-  .clock-hands-svg line { stroke-linecap:round; vector-effect:non-scaling-stroke; }
-  .clock-pin { position:absolute; width:14px; height:14px; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; background:#087f8c; border:2px solid white; z-index:4; pointer-events:none; box-shadow:0 0 0 1px #123b52; }
-  .clock-actions { display:flex; gap:8px; }
-  .clock-actions button { flex:1; }
-  @media(max-width:420px) { .clock-card { padding:12px; } #analog-clock-face { width:min(280px,72vw); } .clock-digital { font-size:36px; } }
-
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b52"><title>منشی هوشمند</title>
+<style>
+:root{--navy:#123b52;--teal:#087f8c;--bg:#f3f7f9;--line:#dce6eb;--muted:#637787;--red:#a33a3a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#183244;font-family:Tahoma,Arial,sans-serif;line-height:1.7}
+header{background:var(--navy);color:white;padding:20px 16px;text-align:center}header h1{font-size:23px;margin:0}header p{margin:4px 0 0;font-size:13px;opacity:.9}
+main{max-width:850px;margin:auto;padding:14px}.welcome{background:#e6f2f4;border:1px solid #cce3e7;border-radius:14px;padding:13px 15px;margin-bottom:12px;font-size:14px}
+nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:13px}
+nav button{margin:0;padding:10px 5px;background:white;color:var(--navy);border:1px solid var(--line);font-size:13px}
+nav button.active{background:var(--navy);color:white;border-color:var(--navy)}
+section.panel{display:none;background:white;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:13px;box-shadow:0 3px 12px #10203008}
+section.panel.active{display:block}h2{font-size:18px;margin:0 0 10px}h3{font-size:15px;margin:12px 0 5px}
+input,textarea,select,button{font:inherit;border-radius:9px;padding:10px;width:100%;margin:5px 0}
+input,textarea,select{border:1px solid #cbd8df;background:white;color:inherit}textarea{min-height:78px;resize:vertical}
+button{border:0;background:var(--teal);color:white;cursor:pointer}button:focus,input:focus,textarea:focus,select:focus{outline:2px solid #65b7c0;outline-offset:1px}
+button.secondary{background:#e8f0f3;color:#183244;border:1px solid var(--line)}button.danger{background:#fff0f0;color:var(--red);border:1px solid #f0cccc}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.row>*{min-width:0}.muted{font-size:12px;color:var(--muted)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.form-grid .wide{grid-column:1/-1}
+.list{display:grid;gap:9px;margin-top:12px}.item{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff;overflow-wrap:anywhere}.item-title{font-weight:bold}.meta{font-size:12px;color:var(--muted);margin-top:3px}.chips{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.chip{background:#edf4f6;border-radius:20px;padding:2px 8px;font-size:11px}.chip.urgent{background:#fff0ed;color:#a33a3a}.chip.done{background:#e8f6ec;color:#21643a}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.actions button{width:auto;flex:1;min-width:78px;padding:7px;font-size:12px;margin:0}.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px}.hidden{display:none!important}.statusline{font-size:13px;color:var(--teal);min-height:22px}.monthbar{display:grid;grid-template-columns:1fr 2fr 1fr;gap:6px;align-items:center}.monthbar strong{text-align:center;font-size:14px}.week,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.week span{text-align:center;font-size:11px;color:var(--muted);padding:5px 0}.day{min-height:42px;padding:3px 1px;background:#f7fafb;border:1px solid var(--line);color:#183244;font-size:12px;margin:0}.day.selected{background:#d8f0f2;border-color:var(--teal)}.day.has{font-weight:bold;box-shadow:inset 0 -3px var(--teal)}.day:disabled{opacity:.3}
+@media(max-width:520px){main{padding:9px}section.panel{padding:12px}nav{gap:5px}nav button{font-size:11px;padding:9px 2px}.form-grid,.row{grid-template-columns:1fr}.monthbar strong{font-size:12px}.day{min-height:37px}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>منشی هوشمند من</h1>
-    <p>یادداشت‌ها، کارها و یادآوری‌های روزانه</p>
-    <p id="today"></p>
-  </header>
-
-  <main>
-    <section id="global-search-section">
-      <h2>جستجوی یکپارچه</h2>
-      <input id="global-search" type="search" placeholder="جستجو در کارها، یادداشت‌ها و رویدادها…" aria-label="جستجو در همه بخش‌ها" autocomplete="off">
-      <p class="muted" id="global-search-hint">عبارت موردنظر را بنویسید؛ نتایج از اطلاعات ذخیره‌شده در همین مرورگر پیدا می‌شوند.</p>
-      <div id="global-search-results" aria-live="polite"></div>
-    </section>
-    <section>
-      <h2>ثبت کار و یادآوری</h2>
-      <input id="taskTitle" placeholder="عنوان کار یا یادآوری">
-      <input id="taskDate" type="datetime-local" aria-label="تاریخ و ساعت">
-      <button id="addTask">ثبت کار</button>
-      <div id="tasks"></div>
-    </section>
-
-    <section>
-      <h2>یادداشت‌ها</h2>
-      <textarea id="noteText" placeholder="یادداشت خود را بنویسید..."></textarea>
-      <button id="saveNote">ذخیره یادداشت</button>
-      <div id="notes"></div>
-    </section>
-
-    <section>
-      <h2>پشتیبان‌گیری</h2>
-      <p class="muted">یک نسخه از کارها و یادداشت‌های ذخیره‌شده دریافت کنید.</p>
-      <button id="backup">دریافت نسخه پشتیبان</button>
-      <p id="status"></p>
-    </section>
-
-    <section id="calendar-section">
-      <h2>تقویم شمسی و رویدادها</h2>
-      <p class="muted">تاریخ‌ها شمسی نمایش داده می‌شوند. رویدادها در همین مرورگر ذخیره می‌شوند.</p>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button id="calendar-prev-year" class="secondary" type="button" style="width:auto;flex:1">سال قبل</button>
-        <button id="calendar-prev" class="secondary" type="button" style="width:auto;flex:1">ماه قبل</button>
-        <strong id="calendar-month-title" style="flex:2;text-align:center"></strong>
-        <button id="calendar-next" class="secondary" type="button" style="width:auto;flex:1">ماه بعد</button>
-        <button id="calendar-next-year" class="secondary" type="button" style="width:auto;flex:1">سال بعد</button>
-      </div>
-      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px"></div>
-      <p id="calendar-selected-date" style="font-weight:bold"></p>
-      <label for="event-title">عنوان رویداد یا جلسه</label>
-      <input id="event-title" placeholder="مثلاً جلسه کاری">
-      <label for="event-time">ساعت جلسه</label>
-      <input id="event-time" type="time" step="60" aria-label="انتخاب ساعت جلسه" required>
-      <p class="muted">برای انتخاب ساعت، روی فیلد بالا بزن؛ در گوشی، صفحهٔ ساعت آنالوگ خود مرورگر باز می‌شود.</p>
-      <button id="event-add" type="button">ثبت رویداد در تاریخ انتخاب‌شده</button>
-      <div id="calendar-events"></div>
-      <p id="calendar-status" class="muted" role="status" aria-live="polite"></p>
-    </section>
-
-  </main>
-
-  <div id="analog-clock-overlay" class="clock-overlay" role="dialog" aria-modal="true" aria-labelledby="analog-clock-title">
-    <div class="clock-card">
-      <h3 id="analog-clock-title">انتخاب ساعت جلسه</h3>
-      <div id="analog-clock-digital" class="clock-digital">--:--</div>
-      <p id="analog-clock-hint" class="muted">ابتدا ساعت را انتخاب کنید</p>
-      <div id="analog-clock-face" class="clock-face" aria-label="صفحه ساعت آنالوگ"></div>
-      <div class="clock-actions">
-        <button id="analog-clock-cancel" type="button" class="secondary">انصراف</button>
-        <button id="analog-clock-confirm" type="button">تأیید ساعت</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const $ = id => document.getElementById(id);
-    const read = key => {
-      try { return JSON.parse(localStorage.getItem(key) || "[]"); }
-      catch { return []; }
-    };
-    let tasks = read("secretary_tasks");
-    let notes = read("secretary_notes");
-
-    function persist() {
-      localStorage.setItem("secretary_tasks", JSON.stringify(tasks));
-      localStorage.setItem("secretary_notes", JSON.stringify(notes));
-    }
-
-    function renderTasks() {
-      $("tasks").replaceChildren();
-      if (!tasks.length) {
-        $("tasks").textContent = "هنوز کاری ثبت نشده است.";
-        return;
-      }
-      tasks.forEach(task => {
-        const item = document.createElement("div");
-        item.className = "item" + (task.done ? " done" : "");
-        const title = document.createElement("div");
-        title.textContent = task.title;
-        item.append(title);
-        if (task.date) {
-          const date = document.createElement("div");
-          date.className = "muted";
-          date.textContent = new Date(task.date).toLocaleString("fa-IR");
-          item.append(date);
-        }
-        const edit = document.createElement("button");
-        edit.className = "secondary";
-        edit.textContent = "ویرایش";
-        edit.onclick = () => {
-          // Inline editor: edit only this task and preserve its completion state.
-          const editor = document.createElement("div");
-          editor.className = "task-editor";
-          const titleInput = document.createElement("input");
-          titleInput.type = "text";
-          titleInput.value = task.title || "";
-          titleInput.placeholder = "عنوان کار";
-          titleInput.setAttribute("aria-label", "ویرایش عنوان کار");
-          const dateInput = document.createElement("input");
-          dateInput.type = "datetime-local";
-          dateInput.value = task.date || "";
-          dateInput.setAttribute("aria-label", "ویرایش تاریخ و ساعت کار");
-          const saveEdit = document.createElement("button");
-          saveEdit.textContent = "ذخیره تغییرات";
-          saveEdit.onclick = () => {
-            const updatedTitle = titleInput.value.trim();
-            if (!updatedTitle) {
-              alert("لطفاً عنوان کار را وارد کنید.");
-              titleInput.focus();
-              return;
-            }
-            task.title = updatedTitle;
-            task.date = dateInput.value;
-            persist();
-            renderTasks();
-          };
-          const cancelEdit = document.createElement("button");
-          cancelEdit.className = "secondary";
-          cancelEdit.textContent = "انصراف";
-          cancelEdit.onclick = () => renderTasks();
-          editor.append(titleInput, dateInput, saveEdit, cancelEdit);
-          item.append(editor);
-          titleInput.focus();
-        };
-        const toggle = document.createElement("button");
-        toggle.textContent = task.done ? "انجام‌نشده" : "انجام شد";
-        toggle.onclick = () => {
-          task.done = !task.done;
-          persist();
-          renderTasks();
-        };
-        const remove = document.createElement("button");
-        remove.className = "secondary";
-        remove.textContent = "حذف";
-        remove.onclick = () => {
-          tasks = tasks.filter(t => t.id !== task.id);
-          persist();
-          renderTasks();
-        };
-        item.append(edit, toggle, remove);
-        $("tasks").append(item);
-      });
-    }
-
-    function renderNotes() {
-      $("notes").replaceChildren();
-      notes.forEach(note => {
-        const item = document.createElement("div");
-        item.className = "item";
-        const content = document.createElement("p");
-        content.textContent = note.text;
-        const remove = document.createElement("button");
-        remove.className = "secondary";
-        remove.textContent = "حذف یادداشت";
-        remove.onclick = () => {
-          notes = notes.filter(n => n.id !== note.id);
-          persist();
-          renderNotes();
-        };
-        item.append(content, remove);
-        $("notes").append(item);
-      });
-    }
-
-    $("addTask").onclick = () => {
-      const title = $("taskTitle").value.trim();
-      if (!title) {
-        alert("لطفاً عنوان کار را وارد کنید.");
-        return;
-      }
-      tasks.unshift({
-        id: Date.now(),
-        title,
-        date: $("taskDate").value,
-        done: false
-      });
-      persist();
-      $("taskTitle").value = "";
-      $("taskDate").value = "";
-      renderTasks();
-    };
-
-    $("saveNote").onclick = () => {
-      const text = $("noteText").value.trim();
-      if (!text) {
-        alert("لطفاً متن یادداشت را بنویسید.");
-        return;
-      }
-      notes.unshift({ id: Date.now(), text });
-      persist();
-      $("noteText").value = "";
-      renderNotes();
-    };
-
-    $("backup").onclick = () => {
-      const data = JSON.stringify({
-        version: 1,
-        tasks,
-        notes,
-        events: JSON.parse(localStorage.getItem("secretary_events") || "[]"),
-        createdAt: new Date().toISOString()
-      }, null, 2);
-      const blob = new Blob([data], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "smart-secretary-backup.json";
-      a.click();
-      URL.revokeObjectURL(url);
-      $("status").textContent = "درخواست دریافت نسخه پشتیبان انجام شد.";
-    };
-
-    $("today").textContent = new Date().toLocaleDateString("fa-IR", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
-
-    renderTasks();
-    renderNotes();
-  </script>
-  
-
-<script>
-(() => {
-  const el = id => document.getElementById(id);
-  const KEY = "secretary_events";
-  const persian = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"numeric",day:"numeric"});
-  const longDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"long",day:"numeric"});
-  const monthDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"long"});
-  const weekdays = ["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
-  const pad = n => String(n).padStart(2,"0");
-  const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const parts = d => Object.fromEntries(persian.formatToParts(d).filter(x=>x.type!=="literal").map(x=>[x.type,x.value]));
-  const toAscii = s => String(s).replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
-  function loadEvents(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
-  let events=loadEvents(), selected=new Date(), month=new Date();
-  selected.setHours(12,0,0,0); month=new Date(selected);
-  function sameMonth(a,b){const x=parts(a),y=parts(b);return toAscii(x.year)+"-"+toAscii(x.month)===toAscii(y.year)+"-"+toAscii(y.month)}
-  function firstOfMonth(d){let f=new Date(d);f.setHours(12,0,0,0);while(sameMonth(new Date(f.getFullYear(),f.getMonth(),f.getDate()-1,12),d))f.setDate(f.getDate()-1);return f}
-  function renderCalendar(){
-    el("calendar-month-title").textContent=monthDate.format(month);
-    const grid=el("calendar-grid");grid.replaceChildren();
-    weekdays.forEach(w=>{const h=document.createElement("div");h.textContent=w;h.style.cssText="font-size:11px;text-align:center;font-weight:bold;padding:5px 0";grid.append(h)});
-    const first=firstOfMonth(month), offset=(first.getDay()+1)%7, start=new Date(first);
-    start.setDate(first.getDate()-offset);
-    for(let i=0;i<42;i++){
-      const d=new Date(start);d.setDate(start.getDate()+i);
-      const b=document.createElement("button");b.type="button";b.style.cssText="margin:0;padding:7px 1px;min-height:40px;font-size:12px";
-      const day=parts(d).day, has=events.some(e=>e.date===iso(d));b.innerHTML="";const jal=document.createElement("span");jal.textContent=day+(has?" •":"");const greg=document.createElement("span");greg.className="gregorian";greg.textContent=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getFullYear()).slice(-2);b.append(jal,greg);b.classList.add("day-cell");
-      b.style.background=iso(d)===iso(selected)?"#123b52":(sameMonth(d,month)?"#e2edf2":"#f1f5f9");
-      b.style.color=iso(d)===iso(selected)?"white":"#183244";
-      b.style.opacity=sameMonth(d,month)?"1":".5";
-      b.setAttribute("aria-label",longDate.format(d)+(has?"، دارای رویداد":""));
-      b.onclick=()=>{selected=new Date(d);selected.setHours(12,0,0,0);if(!sameMonth(selected,month))month=new Date(selected);renderCalendar();renderEvents()};
-      grid.append(b);
-    }
-    el("calendar-selected-date").textContent="تاریخ انتخاب‌شده: "+longDate.format(selected);
-  }
-  function renderEvents(){
-    const box=el("calendar-events");box.replaceChildren();
-    const list=events.filter(e=>e.date===iso(selected)).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
-    if(!list.length){box.textContent="برای این تاریخ رویدادی ثبت نشده است.";return}
-    list.forEach(ev=>{const item=document.createElement("div");item.className="item";const t=document.createElement("div");t.textContent=(ev.time?ev.time+" — ":"")+ev.title;
-      const del=document.createElement("button");del.type="button";del.className="secondary";del.textContent="حذف رویداد";
-      del.onclick=()=>{events=events.filter(x=>x.id!==ev.id);localStorage.setItem(KEY,JSON.stringify(events));renderCalendar();renderEvents();el("calendar-status").textContent="رویداد حذف شد."};
-      item.append(t,del);box.append(item)});
-  }
-  el("calendar-prev").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()-1);renderCalendar()};
-  el("calendar-next").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()+1);renderCalendar()};
-  el("calendar-prev-year").onclick=()=>{month.setDate(1);month.setFullYear(month.getFullYear()-1);renderCalendar()};
-  el("calendar-next-year").onclick=()=>{month.setDate(1);month.setFullYear(month.getFullYear()+1);renderCalendar()};
-  el("event-add").onclick=()=>{
-    const title=el("event-title").value.trim();if(!title){el("calendar-status").textContent="لطفاً عنوان رویداد را وارد کنید.";el("event-title").focus();return}
-    if(!el("event-time").value){el("calendar-status").textContent="لطفاً ساعت جلسه را انتخاب کنید.";el("event-time").focus();return}
-    events.unshift({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),title,date:iso(selected),time:el("event-time").value});
-    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
-    catch{el("calendar-status").textContent="ذخیره انجام نشد؛ فضای ذخیره‌سازی مرورگر را بررسی کنید."}
-  };
-  // Use the device/browser native time picker; Android Chrome presents its analog clock UI.
-  renderCalendar();renderEvents();
-})();
-</script>
-
-<!-- بخش بازیابی نسخه پشتیبان منشی هوشمند -->
-<section id="restore-backup-panel"
-  style="direction:rtl;font-family:Arial,sans-serif;
-  margin:20px auto;padding:16px;max-width:600px;
-  border:1px solid #ccc;border-radius:12px">
-
-  <h3>بازیابی نسخه پشتیبان</h3>
-  <p>فایل پشتیبان JSON را انتخاب کنید.</p>
-
-  <input id="restore-backup-file"
-    type="file" accept=".json,application/json">
-
-  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-    <button id="restore-merge-btn" type="button">
-      ادغام با اطلاعات فعلی
-    </button>
-    <button id="restore-replace-btn" type="button">
-      جایگزینی اطلاعات فعلی
-    </button>
-  </div>
-
-  <p id="restore-backup-status" role="status"
-    aria-live="polite"></p>
+<header><h1>منشی هوشمند من</h1><p>کارها، جلسه‌ها، یادداشت‌ها و یادآوری‌ها؛ ساده و مرتب</p><p id="today"></p></header>
+<main>
+<div class="welcome">برای جلوگیری از شلوغی، هر بار فقط یک بخش را باز کنید. تغییرات به‌صورت خودکار در همین مرورگر ذخیره می‌شوند. برای انتقال اطلاعات بین مرورگرها از «پشتیبان‌گیری» استفاده کنید.</div>
+<nav aria-label="بخش‌های برنامه">
+<button class="active" data-tab="home">نمای کلی</button><button data-tab="tasks">کارها</button><button data-tab="meetings">جلسه‌ها</button><button data-tab="notes">یادداشت‌ها</button><button data-tab="reminders">یادآوری‌ها</button><button data-tab="calendar">تقویم</button><button data-tab="backup">پشتیبان</button>
+</nav>
+<section class="panel active" id="panel-home">
+<h2>نمای کلی</h2><div id="summary" class="list"></div>
+<h3>جستجو در همه بخش‌ها</h3><input id="search" type="search" placeholder="عنوان، متن یا وضعیت را جستجو کنید…" autocomplete="off"><div class="muted">نتایج از کارها، جلسه‌ها، یادداشت‌ها و یادآوری‌های ذخیره‌شده پیدا می‌شوند.</div><div id="search-results" class="list"></div>
 </section>
-
-<script>
-(() => {
-  const fileInput = document.getElementById("restore-backup-file");
-  const status = document.getElementById("restore-backup-status");
-
-  const TASKS_KEY = "secretary_tasks";
-  const NOTES_KEY = "secretary_notes";
-
-  function readArray(key) {
-    const value = localStorage.getItem(key);
-    if (value === null) return [];
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) {
-      throw new Error("ساختار اطلاعات فعلی معتبر نیست.");
-    }
-    return parsed;
-  }
-
-  function uniqueItems(items) {
-    const seen = new Set();
-    return items.filter(item => {
-      const key = item && item.id != null
-        ? "id:" + item.id
-        : "data:" + JSON.stringify(item);
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  async function restore(mode) {
-    const file = fileInput.files && fileInput.files[0];
-    if (!file) {
-      status.textContent = "ابتدا فایل پشتیبان را انتخاب کنید.";
-      return;
-    }
-
-    try {
-      const backup = JSON.parse(await file.text());
-
-      if (!backup || typeof backup !== "object" ||
-          !Array.isArray(backup.tasks) ||
-          !Array.isArray(backup.notes)) {
-        throw new Error(
-          "فایل باید شامل دو آرایه tasks و notes باشد."
-        );
-      }
-
-      const currentTasks = readArray(TASKS_KEY);
-      const currentNotes = readArray(NOTES_KEY);
-
-      let tasks, notes;
-
-      if (mode === "replace") {
-        if (!confirm(
-          "اطلاعات فعلی جایگزین می‌شوند. " +
-          "پیش از ادامه، از اطلاعات فعلی پشتیبان بگیرید. ادامه می‌دهید؟"
-        )) return;
-
-        tasks = backup.tasks;
-        notes = backup.notes;
-      } else {
-        tasks = uniqueItems([...currentTasks, ...backup.tasks]);
-        notes = uniqueItems([...currentNotes, ...backup.notes]);
-      }
-
-      const oldTasks = localStorage.getItem(TASKS_KEY);
-      const oldNotes = localStorage.getItem(NOTES_KEY);
-      const oldEvents = localStorage.getItem("secretary_events");
-      let restoredEvents = oldEvents === null ? [] : JSON.parse(oldEvents);
-      if (Array.isArray(backup.events)) {
-        restoredEvents = mode === "replace" ? backup.events :
-          uniqueItems([...(Array.isArray(restoredEvents) ? restoredEvents : []), ...backup.events]);
-      }
-
-      try {
-        localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-        localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
-        localStorage.setItem("secretary_events", JSON.stringify(restoredEvents));
-      } catch (error) {
-        if (oldTasks === null) localStorage.removeItem(TASKS_KEY);
-        else localStorage.setItem(TASKS_KEY, oldTasks);
-
-        if (oldNotes === null) localStorage.removeItem(NOTES_KEY);
-        else localStorage.setItem(NOTES_KEY, oldNotes);
-
-        if (oldEvents === null) localStorage.removeItem("secretary_events");
-        else localStorage.setItem("secretary_events", oldEvents);
-
-        throw error;
-      }
-
-      status.textContent =
-        "بازیابی انجام شد. صفحه را تازه‌سازی کنید تا اطلاعات نمایش داده شوند.";
-    } catch (error) {
-      status.textContent = "بازیابی ناموفق بود: " + error.message;
-    }
-  }
-
-  document.getElementById("restore-merge-btn")
-    .addEventListener("click", () => restore("merge"));
-
-  document.getElementById("restore-replace-btn")
-    .addEventListener("click", () => restore("replace"));
-})();
-</script>
-
-
-<style>
-  #reminder-panel { direction:rtl; font-family:Tahoma,Arial,sans-serif; max-width:700px; margin:16px auto; padding:18px; background:#fff; border-radius:14px; box-shadow:0 3px 12px #1020300d; color:#183244; }
-  #reminder-panel button { width:100%; font:inherit; border:0; border-radius:9px; padding:12px; margin:6px 0; background:#087f8c; color:#fff; cursor:pointer; }
-  #reminder-panel button.secondary { background:#e2edf2; color:#183244; }
-  #reminder-panel .muted { color:#64748b; font-size:13px; }
-  #reminder-status { color:#087f8c; font-size:13px; }
-  #reminder-alert { display:none; position:fixed; inset:0; z-index:99999; background:rgba(10,25,35,.42); align-items:center; justify-content:center; padding:18px; }
-  #reminder-alert.visible { display:flex; }
-  #reminder-alert .alert-card { width:min(440px,100%); background:#fff; color:#183244; border:3px solid #087f8c; border-radius:18px; padding:24px; box-shadow:0 12px 42px #0004; text-align:center; animation:reminderPulse 1.2s ease-in-out infinite; }
-  #reminder-alert h3 { margin:0 0 10px; font-size:23px; }
-  #reminder-alert p { font-size:18px; line-height:1.7; margin:8px 0 18px; }
-  #reminder-alert button { border:0; border-radius:10px; padding:12px 18px; margin:4px; font:inherit; cursor:pointer; background:#087f8c; color:white; }
-  #reminder-alert button.secondary { background:#e2edf2; color:#183244; }
-  @keyframes reminderPulse { 0%,100% { box-shadow:0 0 0 0 #087f8c22; } 50% { box-shadow:0 0 0 9px #087f8c30; } }
-  @media (prefers-reduced-motion: reduce) { #reminder-alert .alert-card { animation:none; } }
-</style>
-<section id="reminder-panel">
-  <h2>یادآوری‌های خودکار</h2>
-  <p class="muted">این نسخه موعدها را هر ۵ ثانیه بررسی می‌کند و پس از بازگشت به صفحه نیز دوباره بررسی می‌کند. برای یادآوری هنگام بسته‌بودن سایت، زیرساخت اعلان پس‌زمینه لازم است.</p>
-  <button id="enable-reminder-notifications" type="button">فعال‌کردن اعلان‌های مرورگر</button>
-  <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
-  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها با باز بودن صفحه بررسی می‌شوند؛ پس از بازگشت از خواب یا تعویض تب نیز موعدهای ازدست‌رفته تا ۱۲ ساعت اخیر بررسی می‌شوند.</p>
+<section class="panel" id="panel-tasks">
+<h2>کارها</h2><p class="muted">وضعیت انجام و اولویت جدا هستند؛ لازم نیست برای تغییر عنوان یا زمان، وضعیت ساختگی انتخاب کنید.</p>
+<form id="task-form"><input type="hidden" id="task-id"><div class="form-grid"><div class="wide"><label for="task-title">عنوان کار *</label><input id="task-title" required maxlength="180" placeholder="مثلاً آماده‌کردن گزارش"></div><div class="wide"><label for="task-detail">توضیحات (اختیاری)</label><textarea id="task-detail" placeholder="جزئیات یا مراحل کار"></textarea></div><div><label for="task-date">موعد انجام</label><input id="task-date" type="datetime-local"></div><div><label for="task-status">وضعیت</label><select id="task-status"><option value="not_started">شروع نشده</option><option value="in_progress">در حال انجام</option><option value="completed">انجام‌شده</option><option value="cancelled">لغوشده</option></select></div><div><label for="task-priority">اولویت</label><select id="task-priority"><option value="normal">عادی</option><option value="important">مهم</option><option value="urgent">فوری</option></select></div><div><label for="task-reminders">یادآوری خودکار</label><select id="task-reminders"><option value="standard">۲۴ ساعت و ۱ ساعت قبل</option><option value="urgent">چندمرحله‌ای (فوری)</option><option value="off">خاموش</option></select></div></div><div class="row"><button type="submit" id="task-save">ثبت کار</button><button type="button" class="secondary" id="task-cancel-edit">پاک‌کردن فرم</button></div><div id="task-form-status" class="statusline" role="status"></div></form>
+<div class="row"><input id="task-filter" placeholder="جستجو در کارها"><select id="task-status-filter"><option value="">همه وضعیت‌ها</option><option value="not_started">شروع نشده</option><option value="in_progress">در حال انجام</option><option value="completed">انجام‌شده</option><option value="cancelled">لغوشده</option></select></div><div id="task-list" class="list"></div>
 </section>
-<div id="reminder-alert" role="alertdialog" aria-modal="true" aria-labelledby="reminder-alert-title" aria-describedby="reminder-alert-message">
-  <div class="alert-card">
-    <h3 id="reminder-alert-title">🔔 زمان یادآوری رسید</h3>
-    <p id="reminder-alert-message"></p>
-    <button id="reminder-alert-dismiss" type="button">متوجه شدم</button>
-    <button id="reminder-alert-silence" class="secondary" type="button">قطع صدا</button>
-  </div>
-</div>
+<section class="panel" id="panel-meetings">
+<h2>جلسه‌ها</h2><p class="muted">جلسه لغوشده یا برگزارشده دیگر یادآوری آینده دریافت نمی‌کند. تغییر زمان، زمان‌های یادآوری را دوباره محاسبه می‌کند.</p>
+<form id="meeting-form"><input type="hidden" id="meeting-id"><div class="form-grid"><div class="wide"><label for="meeting-title">عنوان جلسه *</label><input id="meeting-title" required maxlength="180" placeholder="موضوع یا نام جلسه"></div><div><label for="meeting-date">تاریخ و ساعت *</label><input id="meeting-date" type="datetime-local" required></div><div><label for="meeting-duration">مدت (دقیقه)</label><select id="meeting-duration"><option value="">مشخص نیست</option><option>15</option><option>30</option><option>45</option><option>60</option><option>90</option><option>120</option></select></div><div><label for="meeting-status">وضعیت</label><select id="meeting-status"><option value="planned">برنامه‌ریزی‌شده</option><option value="ongoing">در حال برگزاری</option><option value="held">برگزارشده</option><option value="cancelled">لغوشده</option></select></div><div><label for="meeting-priority">اهمیت</label><select id="meeting-priority"><option value="normal">عادی</option><option value="important">مهم</option><option value="urgent">فوری</option></select></div><div class="wide"><label for="meeting-purpose">هدف جلسه (اختیاری)</label><textarea id="meeting-purpose" placeholder="اگر هدف را می‌دانید بنویسید؛ در غیر این صورت خالی بگذارید."></textarea></div><div class="wide"><label for="meeting-docs">مدارک موردنیاز (اختیاری)</label><textarea id="meeting-docs" placeholder="گزارش‌ها، فایل‌ها یا مدارک لازم"></textarea></div></div><div class="row"><button type="submit" id="meeting-save">ثبت جلسه</button><button type="button" class="secondary" id="meeting-cancel-edit">پاک‌کردن فرم</button></div><div id="meeting-form-status" class="statusline" role="status"></div></form>
+<h3>آماده‌سازی جلسه</h3><p class="muted">پیش‌نویس قابل ویرایش تولید می‌شود؛ پیش از استفاده، متن را بررسی و تأیید کنید.</p><div class="row"><input id="prep-topic" placeholder="موضوع جلسه برای تهیه دستورجلسه"><select id="prep-duration"><option value="30">مدت: ۳۰ دقیقه</option><option value="45">۴۵ دقیقه</option><option value="60">۶۰ دقیقه</option><option value="90">۹۰ دقیقه</option></select></div><button id="make-agenda">تهیه پیش‌نویس دستورجلسه</button><textarea id="agenda-draft" placeholder="پیش‌نویس دستورجلسه اینجا ساخته می‌شود و قابل ویرایش است."></textarea><div class="row"><button id="save-agenda" type="button">ذخیره در یادداشت‌ها</button><button id="clear-agenda" type="button" class="secondary">پاک‌کردن پیش‌نویس</button></div>
+<div id="meeting-list" class="list"></div>
+</section>
+<section class="panel" id="panel-notes">
+<h2>یادداشت‌ها</h2><form id="note-form"><input type="hidden" id="note-id"><label for="note-title">عنوان یادداشت</label><input id="note-title" maxlength="180" placeholder="عنوان کوتاه"><label for="note-text">متن *</label><textarea id="note-text" required placeholder="متن یادداشت را بنویسید…"></textarea><div class="row"><label>وضعیت<select id="note-status"><option value="active">فعال</option><option value="completed">تکمیل‌شده</option><option value="archived">بایگانی‌شده</option></select></label><button type="submit" id="note-save">ذخیره یادداشت</button></div><button type="button" class="secondary" id="note-cancel-edit">پاک‌کردن فرم</button><div id="note-form-status" class="statusline" role="status"></div></form><input id="note-filter" placeholder="جستجو در یادداشت‌ها"><div id="note-list" class="list"></div>
+</section>
+<section class="panel" id="panel-reminders">
+<h2>یادآوری‌ها</h2><p class="muted">یادآوری‌های متصل به کار یا جلسه از همان مورد مدیریت می‌شوند. این بخش برای یادآوری مستقل است.</p><form id="reminder-form"><input type="hidden" id="reminder-id"><div class="form-grid"><div class="wide"><label for="reminder-title">عنوان *</label><input id="reminder-title" required maxlength="180"></div><div><label for="reminder-date">تاریخ و ساعت *</label><input id="reminder-date" type="datetime-local" required></div><div><label for="reminder-status">وضعیت</label><select id="reminder-status"><option value="active">فعال</option><option value="completed">انجام‌شده</option><option value="cancelled">لغوشده</option></select></div><div class="wide"><label for="reminder-detail">توضیحات (اختیاری)</label><textarea id="reminder-detail"></textarea></div></div><div class="row"><button type="submit" id="reminder-save">ثبت یادآوری</button><button type="button" class="secondary" id="reminder-cancel-edit">پاک‌کردن فرم</button></div><div id="reminder-form-status" class="statusline"></div></form><div id="reminder-list" class="list"></div>
+</section>
+<section class="panel" id="panel-calendar">
+<h2>تقویم شمسی</h2><p class="muted">برای دیدن رویدادهای یک روز، روی همان روز بزنید. نشان کوچک زیر روز یعنی مورد زمان‌بندی‌شده دارید.</p><div class="monthbar"><button id="month-prev" class="secondary">ماه قبل</button><strong id="month-title"></strong><button id="month-next" class="secondary">ماه بعد</button></div><div class="week"><span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span></div><div id="calendar-days" class="days"></div><h3 id="selected-day-title">موارد روز انتخاب‌شده</h3><div id="calendar-list" class="list"></div></section>
+<section class="panel" id="panel-backup"><h2>پشتیبان‌گیری و بازیابی</h2><p class="muted">نسخه پشتیبان شامل کارها، جلسه‌ها، یادداشت‌ها، یادآوری‌ها و وضعیت‌های آن‌هاست. فایل را در جای امن نگه دارید.</p><button id="backup-export">دریافت نسخه پشتیبان</button><label for="backup-file">بازیابی از فایل پشتیبان JSON</label><input id="backup-file" type="file" accept=".json,application/json"><label><input id="backup-merge" type="checkbox" style="width:auto"> افزودن اطلاعات پشتیبان به اطلاعات فعلی (به‌جای جایگزینی)</label><button id="backup-import">بازیابی پشتیبان</button><div id="backup-status" class="statusline" role="status"></div><p class="muted">یادآوری‌های مرورگر فقط وقتی برنامه باز است قابل اتکاست؛ پس از بستن صفحه، اعلان در پس‌زمینه تضمین نمی‌شود.</p></section>
+</main>
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  const firedKey = "secretary_reminders_fired_v1";
-  const readFired = () => {
-    try { const x = JSON.parse(localStorage.getItem(firedKey) || "{}"); return x && typeof x === "object" ? x : {}; }
-    catch { return {}; }
-  };
-  let fired = readFired();
-  let audioContext = null;
-  let soundTimer = null;
-  function playGentleChime() {
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      audioContext = audioContext || new Ctx();
-      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
-      if (audioContext.state !== "running") return;
-      const start = audioContext.currentTime;
-      [0, 0.32, 0.64].forEach((offset, i) => {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.type = "sine";
-        osc.frequency.value = [660, 784, 880][i];
-        gain.gain.setValueAtTime(0.0001, start + offset);
-        gain.gain.exponentialRampToValueAtTime(0.12, start + offset + 0.025);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + offset + 0.24);
-        osc.connect(gain); gain.connect(audioContext.destination);
-        osc.start(start + offset); osc.stop(start + offset + 0.26);
-      });
-    } catch {}
-  }
-  function stopChime() { if (soundTimer) { clearInterval(soundTimer); soundTimer = null; } }
-  function showVisualAlert(message) {
-    const overlay = $("reminder-alert");
-    if (!overlay) return;
-    $("reminder-alert-message").textContent = message;
-    overlay.classList.add("visible");
-    stopChime();
-    playGentleChime();
-    // Repeat the soft chime a few times while the visible alert remains open.
-    let count = 0;
-    soundTimer = window.setInterval(() => { if (++count >= 3) { stopChime(); return; } playGentleChime(); }, 2200);
-  }
-  const saveFired = () => { try { localStorage.setItem(firedKey, JSON.stringify(fired)); } catch {} };
-  const status = msg => { const node = $("reminder-status"); if (node) node.textContent = msg; };
-
-  async function requestPermission() {
-    if (!("Notification" in window)) {
-      status("این مرورگر از اعلان‌های وب پشتیبانی نمی‌کند؛ هشدار داخل صفحه همچنان قابل استفاده است.");
-      return false;
-    }
-    try {
-      const permission = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
-      if (permission === "granted") { status("اجازهٔ اعلان فعال شد. صدای هشدار را با دکمهٔ آزمایش اعلان امتحان کنید؛ این صفحه را برای بررسی زمان‌ها باز نگه دارید."); return true; }
-      status("اجازه اعلان داده نشد. از تنظیمات سایت در مرورگر، اعلان‌ها را مجاز کنید.");
-      return false;
-    } catch {
-      status("دریافت اجازه اعلان موفق نبود. تنظیمات مرورگر را بررسی کنید.");
-      return false;
-    }
-  }
-
-  function notify(title, body, key) {
-    if (fired[key]) return;
-    fired[key] = new Date().toISOString();
-    saveFired();
-    status("زمان یادآوری رسید: " + title);
-    showVisualAlert(title + (body ? "\n" + body : ""));
-    if ("Notification" in window && Notification.permission === "granted") {
-      try { new Notification("منشی هوشمند — یادآوری", { body: title + (body ? "\n" + body : "") }); } catch {}
-    }
-  }
-
-  function parseLocalDateTime(value) {
-    if (!value) return NaN;
-    const d = new Date(value);
-    return d.getTime();
-  }
-  function checkReminders() {
-    const now = Date.now();
-    const windowMs = 12 * 60 * 60 * 1000; // اگر تب موقتاً متوقف شد، یادآوری‌های همان ۱۲ ساعت اخیر را هم بازیابی می‌کند
-    let tasks = [], events = [];
-    try { tasks = JSON.parse(localStorage.getItem("secretary_tasks") || "[]"); if (!Array.isArray(tasks)) tasks = []; } catch {}
-    try { events = JSON.parse(localStorage.getItem("secretary_events") || "[]"); if (!Array.isArray(events)) events = []; } catch {}
-    tasks.forEach(task => {
-      if (!task || task.done || !task.date) return;
-      const due = parseLocalDateTime(task.date);
-      const key = "task:" + task.id + ":" + task.date;
-      if (Number.isFinite(due) && due <= now && due > now - windowMs && !fired[key]) notify("موعد کار: " + (task.title || "کار بدون عنوان"), "", key);
-    });
-    events.forEach(event => {
-      if (!event || !event.date || !event.time) return;
-      // Calendar stores the Gregorian local date as YYYY-MM-DD and time as HH:mm.
-      const due = parseLocalDateTime(event.date + "T" + event.time);
-      const key = "event:" + event.id + ":" + event.date + ":" + event.time;
-      if (Number.isFinite(due) && due <= now && due > now - windowMs && !fired[key]) notify("موعد جلسه: " + (event.title || "رویداد بدون عنوان"), "", key);
-    });
-  }
-
-  $("enable-reminder-notifications").addEventListener("click", async () => {
-    // Run permission request and unlock audio directly from the user's gesture.
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        audioContext = audioContext || new Ctx();
-        await audioContext.resume();
-        if (audioContext.state === "running") {
-          playGentleChime();
-          status("صدای آزمایشی پخش شد؛ در حال بررسی اجازهٔ اعلان مرورگر…");
-        } else {
-          status("مرورگر هنوز صدای خودکار را فعال نکرده است؛ یک بار «آزمایش اعلان» را بزنید.");
-        }
-      }
-    } catch {}
-    await requestPermission();
-    checkReminders();
-  });
-  $("reminder-alert-dismiss").addEventListener("click", () => { $("reminder-alert").classList.remove("visible"); stopChime(); });
-  $("reminder-alert-silence").addEventListener("click", () => { stopChime(); status("صدای یادآوری قطع شد."); });
-  window.addEventListener("focus", checkReminders);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkReminders(); });
-  $("test-reminder-notification").addEventListener("click", async () => {
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        audioContext = audioContext || new Ctx();
-        await audioContext.resume();
-        if (audioContext.state === "running") playGentleChime();
-      }
-    } catch {}
-    const allowed = await requestPermission();
-    const title = "این یک اعلان آزمایشی است.";
-    if (allowed) {
-      try { new Notification("منشی هوشمند", { body: title }); status("اعلان آزمایشی ارسال شد."); }
-      catch { window.alert(title); status("اعلان آزمایشی در صفحه نمایش داده شد."); }
-    } else {
-      window.alert(title + " برای اعلان‌های سیستمی، اجازه مرورگر را فعال کنید.");
-    }
-  });
-  if ("Notification" in window && Notification.permission === "granted") status("اجازه اعلان مرورگر فعال است؛ یادآوری‌ها در حال بررسی‌اند.");
-  checkReminders();
-  window.setInterval(checkReminders, 5000);
+(()=>{'use strict';
+const K={tasks:'secretary_tasks',notes:'secretary_notes',meetings:'secretary_events',reminders:'secretary_reminders',fired:'secretary_reminders_fired_v1'};
+const $=id=>document.getElementById(id), read=k=>{try{let x=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}, saveAll=()=>{localStorage.setItem(K.tasks,JSON.stringify(tasks));localStorage.setItem(K.notes,JSON.stringify(notes));localStorage.setItem(K.meetings,JSON.stringify(meetings));localStorage.setItem(K.reminders,JSON.stringify(reminders));};
+let tasks=read(K.tasks),notes=read(K.notes),meetings=read(K.meetings),reminders=read(K.reminders);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const labels={task:{not_started:'شروع نشده',in_progress:'در حال انجام',completed:'انجام‌شده',cancelled:'لغوشده'},meeting:{planned:'برنامه‌ریزی‌شده',ongoing:'در حال برگزاری',held:'برگزارشده',cancelled:'لغوشده'},note:{active:'فعال',completed:'تکمیل‌شده',archived:'بایگانی‌شده'},reminder:{active:'فعال',completed:'انجام‌شده',cancelled:'لغوشده'},priority:{normal:'عادی',important:'مهم',urgent:'فوری'}};
+function norm(){tasks=tasks.map(t=>({...t,id:t.id??uid(),status:t.status||(t.done?'completed':'not_started'),priority:t.priority||'normal',reminders:t.reminders||'standard'}));notes=notes.map(n=>({...n,id:n.id??uid(),title:n.title||'',status:n.status||'active'}));meetings=meetings.map(m=>({...m,id:m.id??uid(),status:m.status||'planned',priority:m.priority||'normal',date:m.date||m.datetime||'',purpose:m.purpose||'',docs:m.docs||''}));reminders=reminders.map(r=>({...r,id:r.id??uid(),status:r.status||'active'}));saveAll()}
+function dt(v){if(!v)return 'زمان تعیین نشده';let d=new Date(v);return isNaN(d)?String(v):d.toLocaleString('fa-IR',{dateStyle:'medium',timeStyle:'short'})}
+function chips(type,status,priority){return `<div class="chips"><span class="chip">${esc(labels[type]?.[status]||status||'ثبت‌شده')}</span>${priority?`<span class="chip ${priority==='urgent'?'urgent':''}">اولویت: ${esc(labels.priority[priority]||priority)}</span>`:''}</div>`}
+function card(title,meta,desc,buttons,chip=''){return `<article class="item"><div class="item-title">${esc(title||'بدون عنوان')}</div>${chip}${meta?`<div class="meta">${esc(meta)}</div>`:''}${desc?`<div style="white-space:pre-wrap;margin-top:5px">${esc(desc)}</div>`:''}<div class="actions">${buttons}</div></article>`}
+function btn(label,act,id,cl='secondary'){return `<button type="button" class="${cl}" data-act="${act}" data-id="${esc(id)}">${label}</button>`}
+function renderTasks(){let q=$('task-filter').value.toLowerCase(),f=$('task-status-filter').value;let a=tasks.filter(t=>(!f||t.status===f)&&(`${t.title} ${t.detail||''}`.toLowerCase().includes(q))).sort((a,b)=>(a.date||'').localeCompare(b.date||''));$('task-list').innerHTML=a.length?a.map(t=>card(t.title,dt(t.date),t.detail,btn('ویرایش','edit-task',t.id)+btn('تغییر وضعیت','cycle-task',t.id)+btn('حذف','delete-task',t.id,'danger'),chips('task',t.status,t.priority))).join(''):'<div class="empty">کاری با این مشخصات پیدا نشد.</div>'}
+function renderMeetings(){let a=[...meetings].sort((x,y)=>(x.date||'').localeCompare(y.date||''));$('meeting-list').innerHTML=a.length?a.map(m=>card(m.title,dt(m.date),[m.purpose,m.docs?'مدارک: '+m.docs:''].filter(Boolean).join('\n'),btn('ویرایش','edit-meeting',m.id)+btn('تغییر وضعیت','cycle-meeting',m.id)+btn('حذف','delete-meeting',m.id,'danger'),chips('meeting',m.status,m.priority))).join(''):'<div class="empty">هنوز جلسه‌ای ثبت نشده است.</div>'}
+function renderNotes(){let q=$('note-filter').value.toLowerCase(),a=notes.filter(n=>(`${n.title} ${n.text}`.toLowerCase().includes(q)));$('note-list').innerHTML=a.length?a.map(n=>card(n.title||'یادداشت بدون عنوان',labels.note[n.status]||'فعال',n.text,btn('ویرایش','edit-note',n.id)+btn('تغییر وضعیت','cycle-note',n.id)+btn('حذف','delete-note',n.id,'danger'),chips('note',n.status))).join(''):'<div class="empty">یادداشتی پیدا نشد.</div>'}
+function renderReminders(){let a=[...reminders].sort((x,y)=>(x.date||'').localeCompare(y.date||''));$('reminder-list').innerHTML=a.length?a.map(r=>card(r.title,dt(r.date),r.detail,btn('ویرایش','edit-reminder',r.id)+btn('تغییر وضعیت','cycle-reminder',r.id)+btn('حذف','delete-reminder',r.id,'danger'),chips('reminder',r.status))).join(''):'<div class="empty">یادآوری مستقلی ثبت نشده است.</div>'}
+function renderSummary(){let openT=tasks.filter(x=>!['completed','cancelled'].includes(x.status)).length,upcoming=meetings.filter(x=>x.status==='planned'&&x.date&&new Date(x.date)>new Date()).length,activeR=reminders.filter(x=>x.status==='active').length,activeN=notes.filter(x=>x.status==='active').length;$('summary').innerHTML=[['کارهای باز',openT,'tasks'],['جلسه‌های برنامه‌ریزی‌شده',upcoming,'meetings'],['یادآوری‌های فعال',activeR,'reminders'],['یادداشت‌های فعال',activeN,'notes']].map(([a,b,t])=>`<button class="secondary" data-goto="${t}" style="text-align:right">${a}: <strong>${b}</strong> — بازکردن بخش</button>`).join('')}
+function renderSearch(){let q=$('search').value.trim().toLowerCase();if(!q){$('search-results').innerHTML='';return}let arr=[];tasks.forEach(x=>{if((x.title+' '+(x.detail||'')).toLowerCase().includes(q))arr.push({type:'کار',title:x.title,meta:labels.task[x.status]+' · '+dt(x.date),tab:'tasks'})});meetings.forEach(x=>{if((x.title+' '+(x.purpose||'')+' '+(x.docs||'')).toLowerCase().includes(q))arr.push({type:'جلسه',title:x.title,meta:labels.meeting[x.status]+' · '+dt(x.date),tab:'meetings'})});notes.forEach(x=>{if((x.title+' '+x.text).toLowerCase().includes(q))arr.push({type:'یادداشت',title:x.title||'بدون عنوان',meta:labels.note[x.status],tab:'notes'})});reminders.forEach(x=>{if((x.title+' '+(x.detail||'')).toLowerCase().includes(q))arr.push({type:'یادآوری',title:x.title,meta:labels.reminder[x.status]+' · '+dt(x.date),tab:'reminders'})});$('search-results').innerHTML=arr.length?arr.map(x=>`<article class="item"><div class="item-title">${esc(x.title)}</div><div class="meta">${x.type} · ${esc(x.meta)}</div><button class="secondary" data-goto="${x.tab}">رفتن به بخش</button></article>`).join(''):'<div class="empty">نتیجه‌ای پیدا نشد.</div>'}
+function renderAll(){renderTasks();renderMeetings();renderNotes();renderReminders();renderSummary();renderSearch();renderCalendar()}
+function showTab(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t));window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelector('nav').addEventListener('click',e=>{let b=e.target.closest('[data-tab]');if(b)showTab(b.dataset.tab)});
+document.addEventListener('click',e=>{let g=e.target.closest('[data-goto]');if(g){showTab(g.dataset.goto);return}let b=e.target.closest('[data-act]');if(!b)return;let id=b.dataset.id,act=b.dataset.act,arr=act.includes('task')?tasks:act.includes('meeting')?meetings:act.includes('note')?notes:reminders,item=arr.find(x=>String(x.id)===id);if(act.startsWith('delete-')){if(!confirm('این مورد حذف شود؟ این کار قابل بازگشت نیست.'))return;let type=act.split('-')[1];if(type==='task')tasks=tasks.filter(x=>String(x.id)!==id);if(type==='meeting')meetings=meetings.filter(x=>String(x.id)!==id);if(type==='note')notes=notes.filter(x=>String(x.id)!==id);if(type==='reminder')reminders=reminders.filter(x=>String(x.id)!==id);saveAll();renderAll();return}if(!item)return;if(act==='edit-task'){fillTask(item);showTab('tasks')}if(act==='edit-meeting'){fillMeeting(item);showTab('meetings')}if(act==='edit-note'){fillNote(item);showTab('notes')}if(act==='edit-reminder'){fillReminder(item);showTab('reminders')}if(act==='cycle-task'){let s=['not_started','in_progress','completed','cancelled'];item.status=s[(s.indexOf(item.status)+1)%s.length];saveAll();renderAll()}if(act==='cycle-meeting'){let s=['planned','ongoing','held','cancelled'];item.status=s[(s.indexOf(item.status)+1)%s.length];saveAll();renderAll()}if(act==='cycle-note'){let s=['active','completed','archived'];item.status=s[(s.indexOf(item.status)+1)%s.length];saveAll();renderAll()}if(act==='cycle-reminder'){let s=['active','completed','cancelled'];item.status=s[(s.indexOf(item.status)+1)%s.length];saveAll();renderAll()}});
+function clearForm(prefix,formId){$(formId).reset();$(prefix+'-id').value='';$(prefix+'-save').textContent=prefix==='task'?'ثبت کار':prefix==='meeting'?'ثبت جلسه':prefix==='note'?'ذخیره یادداشت':'ثبت یادآوری'}
+function fillTask(t){$('task-id').value=t.id;$('task-title').value=t.title||'';$('task-detail').value=t.detail||'';$('task-date').value=t.date||'';$('task-status').value=t.status||'not_started';$('task-priority').value=t.priority||'normal';$('task-reminders').value=t.reminders||'standard';$('task-save').textContent='ذخیره تغییرات';$('task-title').focus()}
+function fillMeeting(m){$('meeting-id').value=m.id;$('meeting-title').value=m.title||'';$('meeting-date').value=m.date||'';$('meeting-duration').value=m.duration||'';$('meeting-status').value=m.status||'planned';$('meeting-priority').value=m.priority||'normal';$('meeting-purpose').value=m.purpose||'';$('meeting-docs').value=m.docs||'';$('meeting-save').textContent='ذخیره تغییرات';$('meeting-title').focus()}
+function fillNote(n){$('note-id').value=n.id;$('note-title').value=n.title||'';$('note-text').value=n.text||'';$('note-status').value=n.status||'active';$('note-save').textContent='ذخیره تغییرات';$('note-title').focus()}
+function fillReminder(r){$('reminder-id').value=r.id;$('reminder-title').value=r.title||'';$('reminder-date').value=r.date||'';$('reminder-status').value=r.status||'active';$('reminder-detail').value=r.detail||'';$('reminder-save').textContent='ذخیره تغییرات';$('reminder-title').focus()}
+$('task-form').onsubmit=e=>{e.preventDefault();let id=$('task-id').value,obj={id:id||uid(),title:$('task-title').value.trim(),detail:$('task-detail').value.trim(),date:$('task-date').value,status:$('task-status').value,priority:$('task-priority').value,reminders:$('task-reminders').value};if(!obj.title)return;let i=tasks.findIndex(x=>String(x.id)===id);if(i>=0)tasks[i]=obj;else tasks.unshift(obj);saveAll();clearForm('task','task-form');$('task-form-status').textContent='کار ذخیره شد.';renderAll()};
+$('meeting-form').onsubmit=e=>{e.preventDefault();let id=$('meeting-id').value,obj={id:id||uid(),title:$('meeting-title').value.trim(),date:$('meeting-date').value,duration:$('meeting-duration').value,status:$('meeting-status').value,priority:$('meeting-priority').value,purpose:$('meeting-purpose').value.trim(),docs:$('meeting-docs').value.trim()};if(!obj.title||!obj.date)return;let i=meetings.findIndex(x=>String(x.id)===id);if(i>=0)meetings[i]=obj;else meetings.unshift(obj);saveAll();clearForm('meeting','meeting-form');$('meeting-form-status').textContent='جلسه ذخیره شد.';renderAll()};
+$('note-form').onsubmit=e=>{e.preventDefault();let id=$('note-id').value,obj={id:id||uid(),title:$('note-title').value.trim(),text:$('note-text').value.trim(),status:$('note-status').value};if(!obj.text)return;let i=notes.findIndex(x=>String(x.id)===id);if(i>=0)notes[i]=obj;else notes.unshift(obj);saveAll();clearForm('note','note-form');$('note-form-status').textContent='یادداشت ذخیره شد.';renderAll()};
+$('reminder-form').onsubmit=e=>{e.preventDefault();let id=$('reminder-id').value,obj={id:id||uid(),title:$('reminder-title').value.trim(),date:$('reminder-date').value,status:$('reminder-status').value,detail:$('reminder-detail').value.trim(),reminders:'off'};if(!obj.title||!obj.date)return;let i=reminders.findIndex(x=>String(x.id)===id);if(i>=0)reminders[i]=obj;else reminders.unshift(obj);saveAll();clearForm('reminder','reminder-form');$('reminder-form-status').textContent='یادآوری ذخیره شد.';renderAll()};
+[['task','task-form','task-cancel-edit'],['meeting','meeting-form','meeting-cancel-edit'],['note','note-form','note-cancel-edit'],['reminder','reminder-form','reminder-cancel-edit']].forEach(([p,f,c])=>$(c).onclick=()=>clearForm(p,f));
+['task-filter','task-status-filter','note-filter','search'].forEach(id=>$(id).addEventListener('input',renderAll));
+$('make-agenda').onclick=()=>{let topic=$('prep-topic').value.trim();if(!topic){alert('ابتدا موضوع جلسه را بنویسید.');$('prep-topic').focus();return}let mins=Number($('prep-duration').value),a=Math.round(mins*.2),b=Math.round(mins*.5),c=mins-a-b;$('agenda-draft').value=`موضوع: ${topic}\n\nهدف پیشنهادی (برای بررسی و تأیید):\n- مشخص‌کردن نتیجه‌ای که انتظار می‌رود از جلسه به دست آید.\n\nپیش‌نویس دستورجلسه (${mins} دقیقه):\n۱. شروع و بیان هدف — ${a} دقیقه\n۲. بررسی موضوعات و اطلاعات موجود — ${b} دقیقه\n۳. پرسش‌ها، گزینه‌ها و تصمیم‌های لازم — ${Math.max(5,Math.round(c*.6))} دقیقه\n۴. جمع‌بندی، مسئول اقدام‌ها و موعدها — ${Math.max(3,c-Math.max(5,Math.round(c*.6)))} دقیقه\n\nمدارک لازم: بر اساس موضوع تعیین و پیش از جلسه تأیید شود.\nپرسش‌های باز:\n- چه تصمیمی باید گرفته شود؟\n- چه اطلاعاتی هنوز کم است؟\n\nاقدام‌های بعدی:\n- اقدام | مسئول | موعد (پس از جلسه تکمیل شود)\n\nیادداشت: این متن پیش‌نویس عمومی است؛ جزئیات واقعی جلسه را بررسی و ویرایش کنید.`};
+$('save-agenda').onclick=()=>{let text=$('agenda-draft').value.trim();if(!text){alert('ابتدا پیش‌نویس را بسازید یا بنویسید.');return}notes.unshift({id:uid(),title:'پیش‌نویس دستورجلسه: '+($('prep-topic').value.trim()||'جلسه'),text,status:'active'});saveAll();renderAll();$('meeting-form-status').textContent='پیش‌نویس در یادداشت‌ها ذخیره شد.'};
+$('clear-agenda').onclick=()=>{$('agenda-draft').value='';$('prep-topic').value=''};
+$('backup-export').onclick=()=>{let data={version:2,tasks,notes,meetings,events:meetings,reminders,createdAt:new Date().toISOString()};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='smart-secretary-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('backup-status').textContent='فایل پشتیبان آماده شد.'};
+$('backup-import').onclick=async()=>{let file=$('backup-file').files[0];if(!file){$('backup-status').textContent='ابتدا فایل پشتیبان را انتخاب کنید.';return}try{let d=JSON.parse(await file.text());let incoming={tasks:Array.isArray(d.tasks)?d.tasks:[],notes:Array.isArray(d.notes)?d.notes:[],meetings:Array.isArray(d.meetings)?d.meetings:(Array.isArray(d.events)?d.events:[]),reminders:Array.isArray(d.reminders)?d.reminders:[]};if(!confirm($('backup-merge').checked?'اطلاعات فایل به داده‌های فعلی اضافه شود؟':'اطلاعات فعلی با محتوای فایل جایگزین شود؟'))return;if($('backup-merge').checked){tasks.push(...incoming.tasks);notes.push(...incoming.notes);meetings.push(...incoming.meetings);reminders.push(...incoming.reminders)}else{tasks=incoming.tasks;notes=incoming.notes;meetings=incoming.meetings;reminders=incoming.reminders}norm();renderAll();$('backup-status').textContent='بازیابی انجام شد.'}catch{$('backup-status').textContent='فایل معتبر نیست یا قابل خواندن نیست.'}};
+let viewDate=new Date(),selectedISO=new Date().toISOString().slice(0,10);
+function jalaliParts(date){let fmt=new Intl.DateTimeFormat('en-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric'}),o={};fmt.formatToParts(date).forEach(p=>o[p.type]=p.value);return {y:+o.year,m:+o.month,d:+o.day}}
+function sameJMonth(a,b){let x=jalaliParts(a),y=jalaliParts(b);return x.y===y.y&&x.m===y.m}
+function findMonthStart(d){let x=new Date(d);x.setHours(12,0,0,0);while(!sameJMonth(new Date(x.getFullYear(),x.getMonth(),x.getDate()-1,12),d))x.setDate(x.getDate()-1);return x}
+function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function itemsForDate(s){let start=s+'T00:00',end=s+'T23:59';return [...tasks.filter(x=>x.date&&x.date.slice(0,10)===s&&!['completed','cancelled'].includes(x.status)).map(x=>({type:'کار',title:x.title,date:x.date,tab:'tasks'})),...meetings.filter(x=>x.date&&x.date.slice(0,10)===s&&!['held','cancelled'].includes(x.status)).map(x=>({type:'جلسه',title:x.title,date:x.date,tab:'meetings'})),...reminders.filter(x=>x.date&&x.date.slice(0,10)===s&&x.status==='active').map(x=>({type:'یادآوری',title:x.title,date:x.date,tab:'reminders'}))]}
+function renderCalendar(){let first=findMonthStart(viewDate),p=jalaliParts(first),dow=(first.getDay()+1)%7,days=$('calendar-days');$('month-title').textContent=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{month:'long',year:'numeric'}).format(first);days.innerHTML='';let probe=new Date(first),count=0;while(sameJMonth(probe,first)){count++;probe.setDate(probe.getDate()+1)}for(let i=0;i<dow;i++){let x=document.createElement('button');x.className='day';x.disabled=true;x.style.visibility='hidden';days.append(x)}for(let i=0;i<count;i++){let d=new Date(first);d.setDate(first.getDate()+i);let s=iso(d),jp=jalaliParts(d),b=document.createElement('button');b.className='day'+(s===selectedISO?' selected':'')+(itemsForDate(s).length?' has':'');b.innerHTML=`${jp.d}${itemsForDate(s).length?'<div style="font-size:9px">●</div>':''}`;b.title=itemsForDate(s).length+' مورد';b.onclick=()=>{selectedISO=s;renderCalendar()};days.append(b)}let titleDate=new Date(selectedISO+'T12:00:00');$('selected-day-title').textContent='موارد روز '+titleDate.toLocaleDateString('fa-IR');let items=itemsForDate(selectedISO);$('calendar-list').innerHTML=items.length?items.map(x=>`<article class="item"><div class="item-title">${esc(x.title)}</div><div class="meta">${x.type} · ${esc(dt(x.date))}</div><button class="secondary" data-goto="${x.tab}">رفتن به بخش</button></article>`).join(''):'<div class="empty">برای این روز موردی ثبت نشده است.</div>'}
+$('month-prev').onclick=()=>{viewDate.setMonth(viewDate.getMonth()-1);renderCalendar()};$('month-next').onclick=()=>{viewDate.setMonth(viewDate.getMonth()+1);renderCalendar()};
+function notify(title,body){if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body});else{$('today').textContent='یادآوری: '+title+' — '+body}}
+function checkReminders(){let now=Date.now(),fired;try{fired=JSON.parse(localStorage.getItem(K.fired)||'{}')}catch{fired={}}let list=[];function add(type,x,date,mode){if(!date||['completed','cancelled','held'].includes(x.status))return;let target=new Date(date).getTime();if(!target||target<now-60*60*1000)return;let mins=Math.round((target-now)/60000),key=type+':'+x.id+':'+mode;if(mode==='24h'&&mins<=1440&&mins>=1410)list.push({key,title:x.title,body:'حدود ۲۴ ساعت تا موعد باقی مانده است.'});if(mode==='1h'&&mins<=60&&mins>=0)list.push({key,title:x.title,body:'حدود یک ساعت یا کمتر تا موعد باقی مانده است.'});if(mode==='urgent'&&mins<=1440&&mins>=0&&[720,180,60,15].some(n=>mins<=n&&mins>n-3))list.push({key,title:x.title,body:`یادآوری چندمرحله‌ای؛ حدود ${mins} دقیقه باقی مانده است.`})}
+tasks.forEach(x=>{if(x.reminders==='off')return;if(x.reminders==='urgent'||x.priority==='urgent')add('task',x,x.date,'urgent');else{add('task',x,x.date,'24h');add('task',x,x.date,'1h')}});meetings.forEach(x=>{if(x.priority==='urgent'){add('meeting',x,x.date,'urgent')}else{add('meeting',x,x.date,'24h');add('meeting',x,x.date,'1h')}});reminders.forEach(x=>{if(x.status==='active'&&x.date&&new Date(x.date).getTime()<=now&&new Date(x.date).getTime()>now-60000)list.push({key:'reminder:'+x.id,title:x.title,body:x.detail||'زمان یادآوری رسیده است.'})});list.forEach(x=>{if(fired[x.key])return;fired[x.key]=now;notify(x.title,x.body)});localStorage.setItem(K.fired,JSON.stringify(fired))}
+$('today').textContent=new Date().toLocaleDateString('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+norm();renderAll();checkReminders();setInterval(checkReminders,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
+if('Notification'in window&&Notification.permission==='default'){let ask=document.createElement('button');ask.className='secondary';ask.textContent='فعال‌کردن اعلان‌های مرورگر (اختیاری)';ask.onclick=async()=>{let p=await Notification.requestPermission();ask.textContent=p==='granted'?'اعلان‌های مرورگر فعال شد.':'اعلان‌ها فعال نشدند.'};$('panel-home').append(ask)}
 })();
-</script>
-
-
-<script>
-(() => {
-  const $ = id => document.getElementById(id);
-  const input = $('event-time'), overlay = $('analog-clock-overlay'), face = $('analog-clock-face');
-  if (!input || !overlay || !face) return;
-  let stage = 'hour', hour = 9, minute = 0;
-  const pad = n => String(n).padStart(2, '0');
-  function updateDigital() { $('analog-clock-digital').textContent = pad(hour) + ':' + pad(minute); }
-  function renderDial() {
-    face.replaceChildren();
-    // Draw hands with SVG lines: this avoids percentage-height/positioning differences between browsers.
-    const svgNS = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', '0 0 100 100');
-    svg.setAttribute('class', 'clock-hands-svg');
-    const makeHand = (angleDeg, length, width, color) => {
-      const radians = (angleDeg - 90) * Math.PI / 180;
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', '50'); line.setAttribute('y1', '50');
-      line.setAttribute('x2', String(50 + Math.cos(radians) * length));
-      line.setAttribute('y2', String(50 + Math.sin(radians) * length));
-      line.setAttribute('stroke-width', String(width)); line.setAttribute('stroke', color);
-      svg.appendChild(line);
-    };
-    makeHand((hour % 12) * 30 + minute * 0.5, 22, 5, '#123b52');
-    makeHand(minute * 6, 33, 3, '#087f8c');
-    const pin = document.createElement('div'); pin.className = 'clock-pin';
-    face.append(svg, pin);
-    const values = stage === 'hour' ? Array.from({length:24},(_,i)=>i) : Array.from({length:12},(_,i)=>i*5);
-    const total = values.length;
-    values.forEach((value, index) => {
-      const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
-      const radius = total === 24 ? 43 : 42;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = pad(value);
-      b.setAttribute('aria-label', stage === 'hour' ? 'ساعت ' + pad(value) : 'دقیقه ' + pad(value));
-      b.style.left = (50 + Math.cos(angle) * radius) + '%';
-      b.style.top = (50 + Math.sin(angle) * radius) + '%';
-      if ((stage === 'hour' && value === hour) || (stage === 'minute' && value === minute)) b.classList.add('selected');
-      b.onclick = () => {
-        if (stage === 'hour') { hour = value; stage = 'minute'; $('analog-clock-hint').textContent = 'حالا دقیقه را انتخاب کنید'; renderDial(); }
-        else { minute = value; updateDigital(); renderDial(); }
-        updateDigital();
-      };
-      face.append(b);
-    });
-    $('analog-clock-title').textContent = stage === 'hour' ? 'انتخاب ساعت جلسه' : 'انتخاب دقیقه';
-  }
-  function openPicker() {
-    const m = /^(\d{1,2}):(\d{2})$/.exec(input.value || '');
-    if (m) { hour = Math.min(23, +m[1]); minute = Math.round((+m[2])/5)*5 % 60; }
-    else { const now = new Date(); hour = now.getHours(); minute = Math.round(now.getMinutes()/5)*5 % 60; }
-    stage = 'hour'; $('analog-clock-hint').textContent = 'ابتدا ساعت را انتخاب کنید'; updateDigital(); renderDial(); overlay.classList.add('open');
-  }
-  input.addEventListener('click', openPicker);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
-  $('analog-clock-cancel').onclick = () => overlay.classList.remove('open');
-  $('analog-clock-confirm').onclick = () => { input.value = pad(hour) + ':' + pad(minute); input.dispatchEvent(new Event('change', {bubbles:true})); overlay.classList.remove('open'); };
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
-})();
-</script>
-
-<script>
-(() => {
-  const input = document.getElementById('global-search');
-  const results = document.getElementById('global-search-results');
-  const hint = document.getElementById('global-search-hint');
-  if (!input || !results) return;
-  const readList = key => { try { const x = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(x) ? x : []; } catch { return []; } };
-  const norm = value => String(value ?? '').toLocaleLowerCase('fa').replace(/[ي]/g,'ی').replace(/[ك]/g,'ک').replace(/\s+/g,' ').trim();
-  const addResult = (type, title, detail, target) => {
-    const card = document.createElement('div'); card.className = 'item';
-    const heading = document.createElement('strong'); heading.textContent = type + ' — ' + title;
-    const info = document.createElement('p'); info.textContent = detail;
-    const go = document.createElement('button'); go.type = 'button'; go.className = 'secondary'; go.textContent = 'رفتن به بخش';
-    go.onclick = () => { const section = document.getElementById(target); if (section) section.scrollIntoView({behavior:'smooth',block:'start'}); };
-    card.append(heading, info, go); results.append(card);
-  };
-  function search() {
-    const q = norm(input.value); results.replaceChildren();
-    if (!q) { hint.textContent = 'عبارت موردنظر را بنویسید؛ نتایج از اطلاعات ذخیره‌شده در همین مرورگر پیدا می‌شوند.'; return; }
-    let count = 0;
-    const tasks = readList('secretary_tasks');
-    tasks.forEach(t => { const hay = norm([t.title, t.date, t.done ? 'انجام شده انجام‌شده' : 'انجام نشده انجام‌نشده'].join(' ')); if (hay.includes(q)) { addResult('کار', t.title || 'بدون عنوان', (t.date ? 'زمان: ' + t.date + ' · ' : '') + (t.done ? 'انجام شده' : 'انجام نشده'), 'tasks'); count++; } });
-    const notes = readList('secretary_notes');
-    notes.forEach(n => { const hay = norm([n.title, n.text, n.date].join(' ')); if (hay.includes(q)) { const txt = String(n.text || n.title || 'یادداشت بدون متن'); addResult('یادداشت', n.title || txt.slice(0,70), txt.slice(0,180), 'notes'); count++; } });
-    const events = readList('secretary_events');
-    events.forEach(e => { const hay = norm([e.title, e.date, e.time].join(' ')); if (hay.includes(q)) { addResult('رویداد تقویم', e.title || 'بدون عنوان', (e.date || '') + (e.time ? ' · ساعت ' + e.time : ''), 'calendar-section'); count++; } });
-    hint.textContent = count ? count + ' نتیجه پیدا شد.' : 'نتیجه‌ای پیدا نشد. املای عبارت یا واژه دیگری را امتحان کنید.';
-  }
-  input.addEventListener('input', search);
-})();
-</script>
-
-</body>
-</html>
+</script></body></html>
