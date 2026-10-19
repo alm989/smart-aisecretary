@@ -445,7 +445,7 @@
   <p class="muted">برای دریافت هشدار، این صفحه باید باز باشد. مرورگر ممکن است هنگام خواب دستگاه یا غیرفعال بودن صفحه، هشدار را با تأخیر نمایش دهد.</p>
   <button id="enable-reminder-notifications" type="button">فعال‌کردن اعلان‌های مرورگر</button>
   <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
-  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها پس از باز بودن صفحه بررسی می‌شوند.</p>
+  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها هنگام باز بودن صفحه بررسی می‌شوند؛ در صورت تأخیر مرورگر، تا ۱۰ دقیقه پس از موعد هم بررسی می‌شوند.</p>
 </section>
 <script>
 (() => {
@@ -494,7 +494,7 @@
   }
   function checkReminders() {
     const now = Date.now();
-    const windowMs = 60 * 1000;
+    const windowMs = 10 * 60 * 1000; // تاخیر بررسی مرورگر را تا ۱۰ دقیقه جبران می‌کند
     let tasks = [], events = [];
     try { tasks = JSON.parse(localStorage.getItem("secretary_tasks") || "[]"); if (!Array.isArray(tasks)) tasks = []; } catch {}
     try { events = JSON.parse(localStorage.getItem("secretary_events") || "[]"); if (!Array.isArray(events)) events = []; } catch {}
