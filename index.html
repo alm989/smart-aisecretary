@@ -99,7 +99,16 @@ $('backup-import').onclick=async()=>{let file=$('backup-file').files[0];if(!file
 let viewDate=new Date(),selectedISO=new Date().toISOString().slice(0,10);
 function jalaliParts(date){let fmt=new Intl.DateTimeFormat('en-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric'}),o={};fmt.formatToParts(date).forEach(p=>o[p.type]=p.value);return {y:+o.year,m:+o.month,d:+o.day}}
 function sameJMonth(a,b){let x=jalaliParts(a),y=jalaliParts(b);return x.y===y.y&&x.m===y.m}
-function findMonthStart(d){let x=new Date(d);x.setHours(12,0,0,0);while(!sameJMonth(new Date(x.getFullYear(),x.getMonth(),x.getDate()-1,12),d))x.setDate(x.getDate()-1);return x}
+
+function findMonthStart(d){
+  let x=new Date(d);
+  x.setHours(12,0,0,0);
+  while(sameJMonth(new Date(x.getFullYear(),x.getMonth(),x.getDate()-1,12),d)){
+    x.setDate(x.getDate()-1);
+  }
+  return x;
+}
+
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function itemsForDate(s){let start=s+'T00:00',end=s+'T23:59';return [...tasks.filter(x=>x.date&&x.date.slice(0,10)===s&&!['completed','cancelled'].includes(x.status)).map(x=>({type:'کار',title:x.title,date:x.date,tab:'tasks'})),...meetings.filter(x=>x.date&&x.date.slice(0,10)===s&&!['held','cancelled'].includes(x.status)).map(x=>({type:'جلسه',title:x.title,date:x.date,tab:'meetings'})),...reminders.filter(x=>x.date&&x.date.slice(0,10)===s&&x.status==='active').map(x=>({type:'یادآوری',title:x.title,date:x.date,tab:'reminders'}))]}
 function renderCalendar(){let first=findMonthStart(viewDate),dow=(first.getDay()+1)%7,days=$('calendar-days');$('month-title').textContent=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{month:'long',year:'numeric'}).format(first);days.innerHTML='';let probe=new Date(first),count=0;while(sameJMonth(probe,first)){count++;probe.setDate(probe.getDate()+1)}for(let i=0;i<42;i++){let cellIndex=i-dow;if(cellIndex<0||cellIndex>=count){let x=document.createElement('div');x.className='day calendar-empty';x.setAttribute('aria-hidden','true');days.append(x);continue}let d=new Date(first);d.setDate(first.getDate()+cellIndex);let s=iso(d),jp=jalaliParts(d),b=document.createElement('button');b.type='button';b.className='day'+(s===selectedISO?' selected':'')+(itemsForDate(s).length?' has':'');let gregDay=new Intl.DateTimeFormat('en-US',{day:'numeric'}).format(d);b.innerHTML=`<span class="jal">${jp.d}${itemsForDate(s).length?'<span style="font-size:8px"> ●</span>':''}</span><span class="greg">${gregDay}</span>`;b.title=itemsForDate(s).length+' مورد';b.onclick=()=>{selectedISO=s;renderCalendar()};days.append(b)}let titleDate=new Date(selectedISO+'T12:00:00');$('selected-day-title').textContent='موارد روز '+titleDate.toLocaleDateString('fa-IR-u-ca-persian')+' / '+titleDate.toLocaleDateString('en-GB');$('calendar-year').textContent='سال '+new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric'}).format(first);let items=itemsForDate(selectedISO);$('calendar-list').innerHTML=items.length?items.map(x=>`<article class="item"><div class="item-title">${esc(x.title)}</div><div class="meta">${x.type} · ${esc(dt(x.date))}</div><button class="secondary" data-goto="${x.tab}">رفتن به بخش</button></article>`).join(''):'<div class="empty">برای این روز موردی ثبت نشده است.</div>'}
