@@ -432,5 +432,103 @@
 })();
 </script>
 
+
+<style>
+  #reminder-panel { direction:rtl; font-family:Tahoma,Arial,sans-serif; max-width:700px; margin:16px auto; padding:18px; background:#fff; border-radius:14px; box-shadow:0 3px 12px #1020300d; color:#183244; }
+  #reminder-panel button { width:100%; font:inherit; border:0; border-radius:9px; padding:12px; margin:6px 0; background:#087f8c; color:#fff; cursor:pointer; }
+  #reminder-panel button.secondary { background:#e2edf2; color:#183244; }
+  #reminder-panel .muted { color:#64748b; font-size:13px; }
+  #reminder-status { color:#087f8c; font-size:13px; }
+</style>
+<section id="reminder-panel">
+  <h2>یادآوری‌های خودکار</h2>
+  <p class="muted">برای دریافت هشدار، این صفحه باید باز باشد. مرورگر ممکن است هنگام خواب دستگاه یا غیرفعال بودن صفحه، هشدار را با تأخیر نمایش دهد.</p>
+  <button id="enable-reminder-notifications" type="button">فعال‌کردن اعلان‌های مرورگر</button>
+  <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
+  <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها پس از باز بودن صفحه بررسی می‌شوند.</p>
+</section>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const firedKey = "secretary_reminders_fired_v1";
+  const readFired = () => {
+    try { const x = JSON.parse(localStorage.getItem(firedKey) || "{}"); return x && typeof x === "object" ? x : {}; }
+    catch { return {}; }
+  };
+  let fired = readFired();
+  const saveFired = () => { try { localStorage.setItem(firedKey, JSON.stringify(fired)); } catch {} };
+  const status = msg => { const node = $("reminder-status"); if (node) node.textContent = msg; };
+
+  async function requestPermission() {
+    if (!("Notification" in window)) {
+      status("این مرورگر از اعلان‌های وب پشتیبانی نمی‌کند؛ هشدار داخل صفحه همچنان قابل استفاده است.");
+      return false;
+    }
+    try {
+      const permission = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+      if (permission === "granted") { status("اعلان‌های مرورگر فعال هستند."); return true; }
+      status("اجازه اعلان داده نشد. از تنظیمات سایت در مرورگر، اعلان‌ها را مجاز کنید.");
+      return false;
+    } catch {
+      status("دریافت اجازه اعلان موفق نبود. تنظیمات مرورگر را بررسی کنید.");
+      return false;
+    }
+  }
+
+  function notify(title, body, key) {
+    if (fired[key]) return;
+    fired[key] = new Date().toISOString();
+    saveFired();
+    status("زمان یادآوری رسید: " + title);
+    if ("Notification" in window && Notification.permission === "granted") {
+      try { new Notification("منشی هوشمند — یادآوری", { body: title + (body ? "\n" + body : "") }); return; } catch {}
+    }
+    // Fallback visible while the site is open
+    window.alert("یادآوری منشی هوشمند\n" + title + (body ? "\n" + body : ""));
+  }
+
+  function parseLocalDateTime(value) {
+    if (!value) return NaN;
+    const d = new Date(value);
+    return d.getTime();
+  }
+  function checkReminders() {
+    const now = Date.now();
+    const windowMs = 60 * 1000;
+    let tasks = [], events = [];
+    try { tasks = JSON.parse(localStorage.getItem("secretary_tasks") || "[]"); if (!Array.isArray(tasks)) tasks = []; } catch {}
+    try { events = JSON.parse(localStorage.getItem("secretary_events") || "[]"); if (!Array.isArray(events)) events = []; } catch {}
+    tasks.forEach(task => {
+      if (!task || task.done || !task.date) return;
+      const due = parseLocalDateTime(task.date);
+      const key = "task:" + task.id + ":" + task.date;
+      if (Number.isFinite(due) && due <= now && due > now - windowMs && !fired[key]) notify("موعد کار: " + (task.title || "کار بدون عنوان"), "", key);
+    });
+    events.forEach(event => {
+      if (!event || !event.date || !event.time) return;
+      // Calendar stores the Gregorian local date as YYYY-MM-DD and time as HH:mm.
+      const due = parseLocalDateTime(event.date + "T" + event.time);
+      const key = "event:" + event.id + ":" + event.date + ":" + event.time;
+      if (Number.isFinite(due) && due <= now && due > now - windowMs && !fired[key]) notify("موعد جلسه: " + (event.title || "رویداد بدون عنوان"), "", key);
+    });
+  }
+
+  $("enable-reminder-notifications").addEventListener("click", requestPermission);
+  $("test-reminder-notification").addEventListener("click", async () => {
+    const allowed = await requestPermission();
+    const title = "این یک اعلان آزمایشی است.";
+    if (allowed) {
+      try { new Notification("منشی هوشمند", { body: title }); status("اعلان آزمایشی ارسال شد."); }
+      catch { window.alert(title); status("اعلان آزمایشی در صفحه نمایش داده شد."); }
+    } else {
+      window.alert(title + " برای اعلان‌های سیستمی، اجازه مرورگر را فعال کنید.");
+    }
+  });
+  if ("Notification" in window && Notification.permission === "granted") status("اجازه اعلان مرورگر فعال است؛ یادآوری‌ها در حال بررسی‌اند.");
+  checkReminders();
+  window.setInterval(checkReminders, 15000);
+})();
+</script>
+
 </body>
 </html>
