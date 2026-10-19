@@ -92,6 +92,26 @@
       <button id="backup">دریافت نسخه پشتیبان</button>
       <p id="status"></p>
     </section>
+
+    <section id="calendar-section">
+      <h2>تقویم شمسی و رویدادها</h2>
+      <p class="muted">تاریخ‌ها شمسی نمایش داده می‌شوند. رویدادها در همین مرورگر ذخیره می‌شوند.</p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="calendar-prev" class="secondary" type="button" style="width:auto;flex:1">ماه قبل</button>
+        <strong id="calendar-month-title" style="flex:2;text-align:center"></strong>
+        <button id="calendar-next" class="secondary" type="button" style="width:auto;flex:1">ماه بعد</button>
+      </div>
+      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px"></div>
+      <p id="calendar-selected-date" style="font-weight:bold"></p>
+      <label for="event-title">عنوان رویداد یا جلسه</label>
+      <input id="event-title" placeholder="مثلاً جلسه کاری">
+      <label for="event-time">ساعت (اختیاری)</label>
+      <input id="event-time" type="time">
+      <button id="event-add" type="button">ثبت رویداد در تاریخ انتخاب‌شده</button>
+      <div id="calendar-events"></div>
+      <p id="calendar-status" class="muted" role="status" aria-live="polite"></p>
+    </section>
+
   </main>
 
   <script>
@@ -201,6 +221,7 @@
         version: 1,
         tasks,
         notes,
+        events: JSON.parse(localStorage.getItem("secretary_events") || "[]"),
         createdAt: new Date().toISOString()
       }, null, 2);
       const blob = new Blob([data], { type: "application/json" });
@@ -221,6 +242,64 @@
     renderNotes();
   </script>
   
+
+<script>
+(() => {
+  const el = id => document.getElementById(id);
+  const KEY = "secretary_events";
+  const persian = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"numeric",day:"numeric"});
+  const longDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"long",day:"numeric"});
+  const monthDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {year:"numeric",month:"long"});
+  const weekdays = ["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+  const pad = n => String(n).padStart(2,"0");
+  const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parts = d => Object.fromEntries(persian.formatToParts(d).filter(x=>x.type!=="literal").map(x=>[x.type,x.value]));
+  const toAscii = s => String(s).replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
+  function loadEvents(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[]}catch{return []}}
+  let events=loadEvents(), selected=new Date(), month=new Date();
+  selected.setHours(12,0,0,0); month=new Date(selected);
+  function sameMonth(a,b){const x=parts(a),y=parts(b);return toAscii(x.year)+"-"+toAscii(x.month)===toAscii(y.year)+"-"+toAscii(y.month)}
+  function firstOfMonth(d){let f=new Date(d);f.setHours(12,0,0,0);while(sameMonth(new Date(f.getFullYear(),f.getMonth(),f.getDate()-1,12),d))f.setDate(f.getDate()-1);return f}
+  function renderCalendar(){
+    el("calendar-month-title").textContent=monthDate.format(month);
+    const grid=el("calendar-grid");grid.replaceChildren();
+    weekdays.forEach(w=>{const h=document.createElement("div");h.textContent=w;h.style.cssText="font-size:11px;text-align:center;font-weight:bold;padding:5px 0";grid.append(h)});
+    const first=firstOfMonth(month), offset=(first.getDay()+1)%7, start=new Date(first);
+    start.setDate(first.getDate()-offset);
+    for(let i=0;i<42;i++){
+      const d=new Date(start);d.setDate(start.getDate()+i);
+      const b=document.createElement("button");b.type="button";b.style.cssText="margin:0;padding:7px 1px;min-height:40px;font-size:12px";
+      const day=parts(d).day, has=events.some(e=>e.date===iso(d));b.textContent=day+(has?" •":"");
+      b.style.background=iso(d)===iso(selected)?"#123b52":(sameMonth(d,month)?"#e2edf2":"#f1f5f9");
+      b.style.color=iso(d)===iso(selected)?"white":"#183244";
+      b.style.opacity=sameMonth(d,month)?"1":".5";
+      b.setAttribute("aria-label",longDate.format(d)+(has?"، دارای رویداد":""));
+      b.onclick=()=>{selected=new Date(d);selected.setHours(12,0,0,0);if(!sameMonth(selected,month))month=new Date(selected);renderCalendar();renderEvents()};
+      grid.append(b);
+    }
+    el("calendar-selected-date").textContent="تاریخ انتخاب‌شده: "+longDate.format(selected);
+  }
+  function renderEvents(){
+    const box=el("calendar-events");box.replaceChildren();
+    const list=events.filter(e=>e.date===iso(selected)).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+    if(!list.length){box.textContent="برای این تاریخ رویدادی ثبت نشده است.";return}
+    list.forEach(ev=>{const item=document.createElement("div");item.className="item";const t=document.createElement("div");t.textContent=(ev.time?ev.time+" — ":"")+ev.title;
+      const del=document.createElement("button");del.type="button";del.className="secondary";del.textContent="حذف رویداد";
+      del.onclick=()=>{events=events.filter(x=>x.id!==ev.id);localStorage.setItem(KEY,JSON.stringify(events));renderCalendar();renderEvents();el("calendar-status").textContent="رویداد حذف شد."};
+      item.append(t,del);box.append(item)});
+  }
+  el("calendar-prev").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()-1);renderCalendar()};
+  el("calendar-next").onclick=()=>{month.setDate(1);month.setMonth(month.getMonth()+1);renderCalendar()};
+  el("event-add").onclick=()=>{
+    const title=el("event-title").value.trim();if(!title){el("calendar-status").textContent="لطفاً عنوان رویداد را وارد کنید.";el("event-title").focus();return}
+    events.unshift({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()),title,date:iso(selected),time:el("event-time").value||""});
+    try{localStorage.setItem(KEY,JSON.stringify(events));el("event-title").value="";el("event-time").value="";el("calendar-status").textContent="رویداد ذخیره شد.";renderCalendar();renderEvents()}
+    catch{el("calendar-status").textContent="ذخیره انجام نشد؛ فضای ذخیره‌سازی مرورگر را بررسی کنید."}
+  };
+  renderCalendar();renderEvents();
+})();
+</script>
+
 <!-- بخش بازیابی نسخه پشتیبان منشی هوشمند -->
 <section id="restore-backup-panel"
   style="direction:rtl;font-family:Arial,sans-serif;
@@ -314,16 +393,26 @@
 
       const oldTasks = localStorage.getItem(TASKS_KEY);
       const oldNotes = localStorage.getItem(NOTES_KEY);
+      const oldEvents = localStorage.getItem("secretary_events");
+      let restoredEvents = oldEvents === null ? [] : JSON.parse(oldEvents);
+      if (Array.isArray(backup.events)) {
+        restoredEvents = mode === "replace" ? backup.events :
+          uniqueItems([...(Array.isArray(restoredEvents) ? restoredEvents : []), ...backup.events]);
+      }
 
       try {
         localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
         localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+        localStorage.setItem("secretary_events", JSON.stringify(restoredEvents));
       } catch (error) {
         if (oldTasks === null) localStorage.removeItem(TASKS_KEY);
         else localStorage.setItem(TASKS_KEY, oldTasks);
 
         if (oldNotes === null) localStorage.removeItem(NOTES_KEY);
         else localStorage.setItem(NOTES_KEY, oldNotes);
+
+        if (oldEvents === null) localStorage.removeItem("secretary_events");
+        else localStorage.setItem("secretary_events", oldEvents);
 
         throw error;
       }
