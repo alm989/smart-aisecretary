@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123b52">
+  <title>منشی هوشمند</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #f1f5f9;
+      color: #183244;
+    }
+    header {
+      background: #123b52;
+      color: white;
+      padding: 24px 16px;
+      text-align: center;
+    }
+    header h1 { margin: 0 0 8px; font-size: 25px; }
+    header p { margin: 0; font-size: 14px; }
+    main { max-width: 700px; margin: auto; padding: 16px; }
+    section {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 12px #1020300d;
+    }
+    h2 { font-size: 18px; margin-top: 0; }
+    input, textarea, button {
+      width: 100%;
+      font: inherit;
+      border-radius: 9px;
+      padding: 12px;
+      margin: 6px 0;
+    }
+    input, textarea {
+      border: 1px solid #cbd5e1;
+      background: white;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    button {
+      border: 0;
+      background: #087f8c;
+      color: white;
+      cursor: pointer;
+    }
+    button.secondary { background: #e2edf2; color: #183244; }
+    .item {
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      overflow-wrap: anywhere;
+    }
+    .item.done { opacity: .65; text-decoration: line-through; }
+    .item button { width: auto; padding: 8px 12px; margin-left: 5px; }
+    .muted { color: #64748b; font-size: 13px; }
+    #status { font-size: 13px; color: #087f8c; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>منشی هوشمند من</h1>
+    <p>یادداشت‌ها، کارها و یادآوری‌های روزانه</p>
+    <p id="today"></p>
+  </header>
+
+  <main>
+    <section>
+      <h2>ثبت کار و یادآوری</h2>
+      <input id="taskTitle" placeholder="عنوان کار یا یادآوری">
+      <input id="taskDate" type="datetime-local" aria-label="تاریخ و ساعت">
+      <button id="addTask">ثبت کار</button>
+      <div id="tasks"></div>
+    </section>
+
+    <section>
+      <h2>یادداشت‌ها</h2>
+      <textarea id="noteText" placeholder="یادداشت خود را بنویسید..."></textarea>
+      <button id="saveNote">ذخیره یادداشت</button>
+      <div id="notes"></div>
+    </section>
+
+    <section>
+      <h2>پشتیبان‌گیری</h2>
+      <p class="muted">یک نسخه از کارها و یادداشت‌های ذخیره‌شده دریافت کنید.</p>
+      <button id="backup">دریافت نسخه پشتیبان</button>
+      <p id="status"></p>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const read = key => {
+      try { return JSON.parse(localStorage.getItem(key) || "[]"); }
+      catch { return []; }
+    };
+    let tasks = read("secretary_tasks");
+    let notes = read("secretary_notes");
+
+    function persist() {
+      localStorage.setItem("secretary_tasks", JSON.stringify(tasks));
+      localStorage.setItem("secretary_notes", JSON.stringify(notes));
+    }
+
+    function renderTasks() {
+      $("tasks").replaceChildren();
+      if (!tasks.length) {
+        $("tasks").textContent = "هنوز کاری ثبت نشده است.";
+        return;
+      }
+      tasks.forEach(task => {
+        const item = document.createElement("div");
+        item.className = "item" + (task.done ? " done" : "");
+        const title = document.createElement("div");
+        title.textContent = task.title;
+        item.append(title);
+        if (task.date) {
+          const date = document.createElement("div");
+          date.className = "muted";
+          date.textContent = new Date(task.date).toLocaleString("fa-IR");
+          item.append(date);
+        }
+        const toggle = document.createElement("button");
+        toggle.textContent = task.done ? "انجام‌نشده" : "انجام شد";
+        toggle.onclick = () => {
+          task.done = !task.done;
+          persist();
+          renderTasks();
+        };
+        const remove = document.createElement("button");
+        remove.className = "secondary";
+        remove.textContent = "حذف";
+        remove.onclick = () => {
+          tasks = tasks.filter(t => t.id !== task.id);
+          persist();
+          renderTasks();
+        };
+        item.append(toggle, remove);
+        $("tasks").append(item);
+      });
+    }
+
+    function renderNotes() {
+      $("notes").replaceChildren();
+      notes.forEach(note => {
+        const item = document.createElement("div");
+        item.className = "item";
+        const content = document.createElement("p");
+        content.textContent = note.text;
+        const remove = document.createElement("button");
+        remove.className = "secondary";
+        remove.textContent = "حذف یادداشت";
+        remove.onclick = () => {
+          notes = notes.filter(n => n.id !== note.id);
+          persist();
+          renderNotes();
+        };
+        item.append(content, remove);
+        $("notes").append(item);
+      });
+    }
+
+    $("addTask").onclick = () => {
+      const title = $("taskTitle").value.trim();
+      if (!title) {
+        alert("لطفاً عنوان کار را وارد کنید.");
+        return;
+      }
+      tasks.unshift({
+        id: Date.now(),
+        title,
+        date: $("taskDate").value,
+        done: false
+      });
+      persist();
+      $("taskTitle").value = "";
+      $("taskDate").value = "";
+      renderTasks();
+    };
+
+    $("saveNote").onclick = () => {
+      const text = $("noteText").value.trim();
+      if (!text) {
+        alert("لطفاً متن یادداشت را بنویسید.");
+        return;
+      }
+      notes.unshift({ id: Date.now(), text });
+      persist();
+      $("noteText").value = "";
+      renderNotes();
+    };
+
+    $("backup").onclick = () => {
+      const data = JSON.stringify({
+        version: 1,
+        tasks,
+        notes,
+        createdAt: new Date().toISOString()
+      }, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "smart-secretary-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+      $("status").textContent = "درخواست دریافت نسخه پشتیبان انجام شد.";
+    };
+
+    $("today").textContent = new Date().toLocaleDateString("fa-IR", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+
+    renderTasks();
+    renderNotes();
+  </script>
+</body>
+</html>
