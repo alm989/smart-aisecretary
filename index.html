@@ -489,7 +489,7 @@
 </style>
 <section id="reminder-panel">
   <h2>یادآوری‌های خودکار</h2>
-  <p class="muted">برای دریافت هشدار، این صفحه باید باز باشد. مرورگر ممکن است هنگام خواب دستگاه یا غیرفعال بودن صفحه، هشدار را با تأخیر نمایش دهد.</p>
+  <p class="muted">این نسخه موعدها را هر ۵ ثانیه بررسی می‌کند و پس از بازگشت به صفحه نیز دوباره بررسی می‌کند. برای یادآوری هنگام بسته‌بودن سایت، زیرساخت اعلان پس‌زمینه لازم است.</p>
   <button id="enable-reminder-notifications" type="button">فعال‌کردن اعلان‌های مرورگر</button>
   <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
   <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها با باز بودن صفحه بررسی می‌شوند؛ پس از بازگشت از خواب یا تعویض تب نیز موعدهای ازدست‌رفته تا ۱۲ ساعت اخیر بررسی می‌شوند.</p>
@@ -540,8 +540,8 @@
     if (!overlay) return;
     $("reminder-alert-message").textContent = message;
     overlay.classList.add("visible");
-    playGentleChime();
     stopChime();
+    playGentleChime();
     // Repeat the soft chime a few times while the visible alert remains open.
     let count = 0;
     soundTimer = window.setInterval(() => { if (++count >= 3) { stopChime(); return; } playGentleChime(); }, 2200);
@@ -556,7 +556,7 @@
     }
     try {
       const permission = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
-      if (permission === "granted") { status("اعلان‌های مرورگر فعال هستند. برای صدای هشدار، دکمهٔ آزمایش اعلان را یک بار بزنید تا مرورگر اجازهٔ پخش صدا را بدهد."); return true; }
+      if (permission === "granted") { status("اجازهٔ اعلان فعال شد. صدای هشدار را با دکمهٔ آزمایش اعلان امتحان کنید؛ این صفحه را برای بررسی زمان‌ها باز نگه دارید."); return true; }
       status("اجازه اعلان داده نشد. از تنظیمات سایت در مرورگر، اعلان‌ها را مجاز کنید.");
       return false;
     } catch {
@@ -603,16 +603,36 @@
   }
 
   $("enable-reminder-notifications").addEventListener("click", async () => {
-    // A user gesture helps browsers permit audio playback later.
-    try { const Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { audioContext = audioContext || new Ctx(); await audioContext.resume(); } } catch {}
+    // Run permission request and unlock audio directly from the user's gesture.
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        audioContext = audioContext || new Ctx();
+        await audioContext.resume();
+        if (audioContext.state === "running") {
+          playGentleChime();
+          status("صدای آزمایشی پخش شد؛ در حال بررسی اجازهٔ اعلان مرورگر…");
+        } else {
+          status("مرورگر هنوز صدای خودکار را فعال نکرده است؛ یک بار «آزمایش اعلان» را بزنید.");
+        }
+      }
+    } catch {}
     await requestPermission();
+    checkReminders();
   });
   $("reminder-alert-dismiss").addEventListener("click", () => { $("reminder-alert").classList.remove("visible"); stopChime(); });
-  $("reminder-alert-silence").addEventListener("click", stopChime);
+  $("reminder-alert-silence").addEventListener("click", () => { stopChime(); status("صدای یادآوری قطع شد."); });
   window.addEventListener("focus", checkReminders);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkReminders(); });
   $("test-reminder-notification").addEventListener("click", async () => {
-    try { const Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { audioContext = audioContext || new Ctx(); await audioContext.resume(); playGentleChime(); } } catch {}
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        audioContext = audioContext || new Ctx();
+        await audioContext.resume();
+        if (audioContext.state === "running") playGentleChime();
+      }
+    } catch {}
     const allowed = await requestPermission();
     const title = "این یک اعلان آزمایشی است.";
     if (allowed) {
