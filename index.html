@@ -111,10 +111,24 @@ function playReminderTone(){try{const C=window.AudioContext||window.webkitAudioC
 function notify(title,body){playReminderTone();let box=$('reminder-toast');box.innerHTML=`<strong>یادآوری منشی هوشمند</strong><div>${esc(title)}</div><p>${esc(body)}</p><button type="button" id="toast-close">متوجه شدم</button>`;box.classList.add('show');$('toast-close').onclick=()=>box.classList.remove('show');if('Notification'in window&&Notification.permission==='granted'){try{new Notification('یادآوری: '+title,{body})}catch{}}}
 $('enable-alerts').onclick=async()=>{let message='هشدار صوتی برای این صفحه فعال شد.';try{const C=window.AudioContext||window.webkitAudioContext;if(C){if(!reminderAudio)reminderAudio=new C();if(reminderAudio.state==='suspended')await reminderAudio.resume()}if('Notification'in window){let p=Notification.permission;if(p==='default')p=await Notification.requestPermission();message+=p==='granted'?' اعلان‌های مرورگر هم فعال شد.': ' اجازهٔ اعلان مرورگر داده نشد؛ پیام داخل برنامه و زنگ هنگام بازبودن صفحه ممکن است.'}else message+=' این مرورگر اعلان سیستمی را پشتیبانی نمی‌کند.'}catch{message='فعال‌سازی کامل نشد؛ اجازهٔ صدا و اعلان را در تنظیمات مرورگر بررسی کنید.'}$('alert-status').textContent=message;playReminderTone()};$('test-alert').onclick=()=>{playReminderTone();notify('آزمایش زنگ هشدار','اگر صدا را شنیدید، زنگ هشدار کار می‌کند.');$('alert-status').textContent='آزمایش اعلان انجام شد.'};
 function checkReminders(){let now=Date.now(),fired;try{fired=JSON.parse(localStorage.getItem(K.fired)||'{}')}catch{fired={}}let list=[];function add(type,x,date,mode){if(!date||['completed','cancelled','held'].includes(x.status))return;let target=new Date(date).getTime();if(!target||target<now-60*60*1000)return;let mins=Math.round((target-now)/60000),key=type+':'+x.id+':'+mode;if(mode==='24h'&&mins<=1440&&mins>=1410)list.push({key,title:x.title,body:'حدود ۲۴ ساعت تا موعد باقی مانده است.'});if(mode==='1h'&&mins<=60&&mins>=0)list.push({key,title:x.title,body:'حدود یک ساعت یا کمتر تا موعد باقی مانده است.'});if(mode==='urgent'&&mins<=1440&&mins>=0&&[720,180,60,15].some(n=>mins<=n&&mins>n-3))list.push({key,title:x.title,body:`یادآوری چندمرحله‌ای؛ حدود ${mins} دقیقه باقی مانده است.`})}
-tasks.forEach(x=>{if(x.reminders==='off')return;if(x.reminders==='urgent'||x.priority==='urgent')add('task',x,x.date,'urgent');else{add('task',x,x.date,'24h');add('task',x,x.date,'1h')}});meetings.forEach(x=>{if(x.priority==='urgent'){add('meeting',x,x.date,'urgent')}else{add('meeting',x,x.date,'24h');add('meeting',x,x.date,'1h')}});reminders.forEach(x=>{if(x.status==='active'&&x.date&&new Date(x.date).getTime()<=now&&new Date(x.date).getTime()>now-60000)list.push({key:'reminder:'+x.id,title:x.title,body:x.detail||'زمان یادآوری رسیده است.'})});list.forEach(x=>{if(fired[x.key])return;fired[x.key]=now;notify(x.title,x.body)});localStorage.setItem(K.fired,JSON.stringify(fired))}
+tasks.forEach(x=>{if(x.reminders==='off')return;if(x.reminders==='urgent'||x.priority==='urgent')add('task',x,x.date,'urgent');else{add('task',x,x.date,'24h');add('task',x,x.date,'1h')}});meetings.forEach(x=>{if(x.priority==='urgent'){add('meeting',x,x.date,'urgent')}else{add('meeting',x,x.date,'24h');add('meeting',x,x.date,'1h')}});reminders.forEach(x=>{
+  if(x.status!=='active'||!x.date)return;
+  const target=new Date(x.date).getTime();
+  if(!Number.isFinite(target)||target<=0)return;
+
+  // هشدار تا ۵ دقیقه پس از موعد هم قابل نمایش است.
+  // کلید fired مانع تکرار هشدار می‌شود.
+  if(target<=now && target>now-5*60*1000){
+    list.push({
+      key:'reminder:'+x.id,
+      title:x.title,
+      body:x.detail||'زمان یادآوری رسیده است.'
+    });
+  }
+});list.forEach(x=>{if(fired[x.key])return;fired[x.key]=now;notify(x.title,x.body)});localStorage.setItem(K.fired,JSON.stringify(fired))}
 function updateHeaderClock(){let now=new Date();$('jalali-today').textContent=now.toLocaleDateString('fa-IR-u-ca-persian',{weekday:'long',year:'numeric',month:'long',day:'numeric'});$('gregorian-today').textContent=now.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'numeric'});$('clock').textContent=now.toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 updateHeaderClock();setInterval(updateHeaderClock,1000);
-norm();renderAll();checkReminders();setInterval(checkReminders,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
+norm();renderAll();checkReminders();setInterval(checkReminders,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
 if('Notification'in window&&Notification.permission==='default'){let ask=document.createElement('button');ask.className='secondary';ask.textContent='فعال‌کردن اعلان‌های مرورگر (اختیاری)';ask.onclick=async()=>{let p=await Notification.requestPermission();ask.textContent=p==='granted'?'اعلان‌های مرورگر فعال شد.':'اعلان‌ها فعال نشدند.'};$('panel-home').append(ask)}
 })();
 </script></body></html>
