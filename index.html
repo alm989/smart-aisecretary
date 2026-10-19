@@ -94,6 +94,12 @@
   </header>
 
   <main>
+    <section id="global-search-section">
+      <h2>جستجوی یکپارچه</h2>
+      <input id="global-search" type="search" placeholder="جستجو در کارها، یادداشت‌ها و رویدادها…" aria-label="جستجو در همه بخش‌ها" autocomplete="off">
+      <p class="muted" id="global-search-hint">عبارت موردنظر را بنویسید؛ نتایج از اطلاعات ذخیره‌شده در همین مرورگر پیدا می‌شوند.</p>
+      <div id="global-search-results" aria-live="polite"></div>
+    </section>
     <section>
       <h2>ثبت کار و یادآوری</h2>
       <input id="taskTitle" placeholder="عنوان کار یا یادآوری">
@@ -752,6 +758,38 @@
   $('analog-clock-cancel').onclick = () => overlay.classList.remove('open');
   $('analog-clock-confirm').onclick = () => { input.value = pad(hour) + ':' + pad(minute); input.dispatchEvent(new Event('change', {bubbles:true})); overlay.classList.remove('open'); };
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+})();
+</script>
+
+<script>
+(() => {
+  const input = document.getElementById('global-search');
+  const results = document.getElementById('global-search-results');
+  const hint = document.getElementById('global-search-hint');
+  if (!input || !results) return;
+  const readList = key => { try { const x = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(x) ? x : []; } catch { return []; } };
+  const norm = value => String(value ?? '').toLocaleLowerCase('fa').replace(/[ي]/g,'ی').replace(/[ك]/g,'ک').replace(/\s+/g,' ').trim();
+  const addResult = (type, title, detail, target) => {
+    const card = document.createElement('div'); card.className = 'item';
+    const heading = document.createElement('strong'); heading.textContent = type + ' — ' + title;
+    const info = document.createElement('p'); info.textContent = detail;
+    const go = document.createElement('button'); go.type = 'button'; go.className = 'secondary'; go.textContent = 'رفتن به بخش';
+    go.onclick = () => { const section = document.getElementById(target); if (section) section.scrollIntoView({behavior:'smooth',block:'start'}); };
+    card.append(heading, info, go); results.append(card);
+  };
+  function search() {
+    const q = norm(input.value); results.replaceChildren();
+    if (!q) { hint.textContent = 'عبارت موردنظر را بنویسید؛ نتایج از اطلاعات ذخیره‌شده در همین مرورگر پیدا می‌شوند.'; return; }
+    let count = 0;
+    const tasks = readList('secretary_tasks');
+    tasks.forEach(t => { const hay = norm([t.title, t.date, t.done ? 'انجام شده انجام‌شده' : 'انجام نشده انجام‌نشده'].join(' ')); if (hay.includes(q)) { addResult('کار', t.title || 'بدون عنوان', (t.date ? 'زمان: ' + t.date + ' · ' : '') + (t.done ? 'انجام شده' : 'انجام نشده'), 'tasks'); count++; } });
+    const notes = readList('secretary_notes');
+    notes.forEach(n => { const hay = norm([n.title, n.text, n.date].join(' ')); if (hay.includes(q)) { const txt = String(n.text || n.title || 'یادداشت بدون متن'); addResult('یادداشت', n.title || txt.slice(0,70), txt.slice(0,180), 'notes'); count++; } });
+    const events = readList('secretary_events');
+    events.forEach(e => { const hay = norm([e.title, e.date, e.time].join(' ')); if (hay.includes(q)) { addResult('رویداد تقویم', e.title || 'بدون عنوان', (e.date || '') + (e.time ? ' · ساعت ' + e.time : ''), 'calendar-section'); count++; } });
+    hint.textContent = count ? count + ' نتیجه پیدا شد.' : 'نتیجه‌ای پیدا نشد. املای عبارت یا واژه دیگری را امتحان کنید.';
+  }
+  input.addEventListener('input', search);
 })();
 </script>
 
