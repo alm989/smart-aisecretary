@@ -75,7 +75,11 @@
   .clock-digital { font-size:42px; letter-spacing:2px; font-variant-numeric:tabular-nums; background:#123b52; color:#fff; padding:12px; border-radius:12px; margin:10px 0; direction:ltr; }
   #analog-clock-face { background:radial-gradient(circle,#f8fbfc 0%,#eaf2f5 72%,#d7e5eb 100%); border-color:#b8cbd4; touch-action:manipulation; }
   #analog-clock-face button { width:34px; height:34px; font-size:12px; background:transparent; color:#183244; border:0; }
-  #analog-clock-face button.selected { background:#087f8c; color:white; }
+  #analog-clock-face button { z-index:3; }
+  #analog-clock-face button.selected { background:#087f8c; color:white; z-index:3; }
+  .clock-hands-svg { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; overflow:visible; }
+  .clock-hands-svg line { stroke-linecap:round; vector-effect:non-scaling-stroke; }
+  .clock-pin { position:absolute; width:14px; height:14px; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; background:#087f8c; border:2px solid white; z-index:4; pointer-events:none; box-shadow:0 0 0 1px #123b52; }
   .clock-actions { display:flex; gap:8px; }
   .clock-actions button { flex:1; }
   @media(max-width:420px) { .clock-card { padding:12px; } #analog-clock-face { width:min(280px,72vw); } .clock-digital { font-size:36px; } }
@@ -660,6 +664,24 @@
   function updateDigital() { $('analog-clock-digital').textContent = pad(hour) + ':' + pad(minute); }
   function renderDial() {
     face.replaceChildren();
+    // Draw hands with SVG lines: this avoids percentage-height/positioning differences between browsers.
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('class', 'clock-hands-svg');
+    const makeHand = (angleDeg, length, width, color) => {
+      const radians = (angleDeg - 90) * Math.PI / 180;
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', '50'); line.setAttribute('y1', '50');
+      line.setAttribute('x2', String(50 + Math.cos(radians) * length));
+      line.setAttribute('y2', String(50 + Math.sin(radians) * length));
+      line.setAttribute('stroke-width', String(width)); line.setAttribute('stroke', color);
+      svg.appendChild(line);
+    };
+    makeHand((hour % 12) * 30 + minute * 0.5, 22, 5, '#123b52');
+    makeHand(minute * 6, 33, 3, '#087f8c');
+    const pin = document.createElement('div'); pin.className = 'clock-pin';
+    face.append(svg, pin);
     const values = stage === 'hour' ? Array.from({length:24},(_,i)=>i) : Array.from({length:12},(_,i)=>i*5);
     const total = values.length;
     values.forEach((value, index) => {
