@@ -72,6 +72,14 @@
   .minute-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
   .minute-grid button { padding:8px 2px; margin:0; font-size:12px; }
   .minute-grid button.selected { background:#123b52; }
+  .clock-digital { font-size:42px; letter-spacing:2px; font-variant-numeric:tabular-nums; background:#123b52; color:#fff; padding:12px; border-radius:12px; margin:10px 0; direction:ltr; }
+  #analog-clock-face { background:radial-gradient(circle,#f8fbfc 0%,#eaf2f5 72%,#d7e5eb 100%); border-color:#b8cbd4; touch-action:manipulation; }
+  #analog-clock-face button { width:34px; height:34px; font-size:12px; background:transparent; color:#183244; border:0; }
+  #analog-clock-face button.selected { background:#087f8c; color:white; }
+  .clock-actions { display:flex; gap:8px; }
+  .clock-actions button { flex:1; }
+  @media(max-width:420px) { .clock-card { padding:12px; } #analog-clock-face { width:min(280px,72vw); } .clock-digital { font-size:36px; } }
+
   </style>
 </head>
 <body>
@@ -127,6 +135,19 @@
     </section>
 
   </main>
+
+  <div id="analog-clock-overlay" class="clock-overlay" role="dialog" aria-modal="true" aria-labelledby="analog-clock-title">
+    <div class="clock-card">
+      <h3 id="analog-clock-title">انتخاب ساعت جلسه</h3>
+      <div id="analog-clock-digital" class="clock-digital">--:--</div>
+      <p id="analog-clock-hint" class="muted">ابتدا ساعت را انتخاب کنید</p>
+      <div id="analog-clock-face" class="clock-face" aria-label="صفحه ساعت آنالوگ"></div>
+      <div class="clock-actions">
+        <button id="analog-clock-cancel" type="button" class="secondary">انصراف</button>
+        <button id="analog-clock-confirm" type="button">تأیید ساعت</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -625,6 +646,52 @@
   if ("Notification" in window && Notification.permission === "granted") status("اجازه اعلان مرورگر فعال است؛ یادآوری‌ها در حال بررسی‌اند.");
   checkReminders();
   window.setInterval(checkReminders, 5000);
+})();
+</script>
+
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const input = $('event-time'), overlay = $('analog-clock-overlay'), face = $('analog-clock-face');
+  if (!input || !overlay || !face) return;
+  let stage = 'hour', hour = 9, minute = 0;
+  const pad = n => String(n).padStart(2, '0');
+  function updateDigital() { $('analog-clock-digital').textContent = pad(hour) + ':' + pad(minute); }
+  function renderDial() {
+    face.replaceChildren();
+    const values = stage === 'hour' ? Array.from({length:24},(_,i)=>i) : Array.from({length:12},(_,i)=>i*5);
+    const total = values.length;
+    values.forEach((value, index) => {
+      const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+      const radius = total === 24 ? 43 : 42;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = pad(value);
+      b.setAttribute('aria-label', stage === 'hour' ? 'ساعت ' + pad(value) : 'دقیقه ' + pad(value));
+      b.style.left = (50 + Math.cos(angle) * radius) + '%';
+      b.style.top = (50 + Math.sin(angle) * radius) + '%';
+      if ((stage === 'hour' && value === hour) || (stage === 'minute' && value === minute)) b.classList.add('selected');
+      b.onclick = () => {
+        if (stage === 'hour') { hour = value; stage = 'minute'; $('analog-clock-hint').textContent = 'حالا دقیقه را انتخاب کنید'; renderDial(); }
+        else { minute = value; updateDigital(); renderDial(); }
+        updateDigital();
+      };
+      face.append(b);
+    });
+    $('analog-clock-title').textContent = stage === 'hour' ? 'انتخاب ساعت جلسه' : 'انتخاب دقیقه';
+  }
+  function openPicker() {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(input.value || '');
+    if (m) { hour = Math.min(23, +m[1]); minute = Math.round((+m[2])/5)*5 % 60; }
+    else { const now = new Date(); hour = now.getHours(); minute = Math.round(now.getMinutes()/5)*5 % 60; }
+    stage = 'hour'; $('analog-clock-hint').textContent = 'ابتدا ساعت را انتخاب کنید'; updateDigital(); renderDial(); overlay.classList.add('open');
+  }
+  input.addEventListener('click', openPicker);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
+  $('analog-clock-cancel').onclick = () => overlay.classList.remove('open');
+  $('analog-clock-confirm').onclick = () => { input.value = pad(hour) + ':' + pad(minute); input.dispatchEvent(new Event('change', {bubbles:true})); overlay.classList.remove('open'); };
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 })();
 </script>
 
