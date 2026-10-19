@@ -220,5 +220,128 @@
     renderTasks();
     renderNotes();
   </script>
+  
+<!-- بخش بازیابی نسخه پشتیبان منشی هوشمند -->
+<section id="restore-backup-panel"
+  style="direction:rtl;font-family:Arial,sans-serif;
+  margin:20px auto;padding:16px;max-width:600px;
+  border:1px solid #ccc;border-radius:12px">
+
+  <h3>بازیابی نسخه پشتیبان</h3>
+  <p>فایل پشتیبان JSON را انتخاب کنید.</p>
+
+  <input id="restore-backup-file"
+    type="file" accept=".json,application/json">
+
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button id="restore-merge-btn" type="button">
+      ادغام با اطلاعات فعلی
+    </button>
+    <button id="restore-replace-btn" type="button">
+      جایگزینی اطلاعات فعلی
+    </button>
+  </div>
+
+  <p id="restore-backup-status" role="status"
+    aria-live="polite"></p>
+</section>
+
+<script>
+(() => {
+  const fileInput = document.getElementById("restore-backup-file");
+  const status = document.getElementById("restore-backup-status");
+
+  const TASKS_KEY = "secretary_tasks";
+  const NOTES_KEY = "secretary_notes";
+
+  function readArray(key) {
+    const value = localStorage.getItem(key);
+    if (value === null) return [];
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) {
+      throw new Error("ساختار اطلاعات فعلی معتبر نیست.");
+    }
+    return parsed;
+  }
+
+  function uniqueItems(items) {
+    const seen = new Set();
+    return items.filter(item => {
+      const key = item && item.id != null
+        ? "id:" + item.id
+        : "data:" + JSON.stringify(item);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  async function restore(mode) {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      status.textContent = "ابتدا فایل پشتیبان را انتخاب کنید.";
+      return;
+    }
+
+    try {
+      const backup = JSON.parse(await file.text());
+
+      if (!backup || typeof backup !== "object" ||
+          !Array.isArray(backup.tasks) ||
+          !Array.isArray(backup.notes)) {
+        throw new Error(
+          "فایل باید شامل دو آرایه tasks و notes باشد."
+        );
+      }
+
+      const currentTasks = readArray(TASKS_KEY);
+      const currentNotes = readArray(NOTES_KEY);
+
+      let tasks, notes;
+
+      if (mode === "replace") {
+        if (!confirm(
+          "اطلاعات فعلی جایگزین می‌شوند. " +
+          "پیش از ادامه، از اطلاعات فعلی پشتیبان بگیرید. ادامه می‌دهید؟"
+        )) return;
+
+        tasks = backup.tasks;
+        notes = backup.notes;
+      } else {
+        tasks = uniqueItems([...currentTasks, ...backup.tasks]);
+        notes = uniqueItems([...currentNotes, ...backup.notes]);
+      }
+
+      const oldTasks = localStorage.getItem(TASKS_KEY);
+      const oldNotes = localStorage.getItem(NOTES_KEY);
+
+      try {
+        localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+        localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+      } catch (error) {
+        if (oldTasks === null) localStorage.removeItem(TASKS_KEY);
+        else localStorage.setItem(TASKS_KEY, oldTasks);
+
+        if (oldNotes === null) localStorage.removeItem(NOTES_KEY);
+        else localStorage.setItem(NOTES_KEY, oldNotes);
+
+        throw error;
+      }
+
+      status.textContent =
+        "بازیابی انجام شد. صفحه را تازه‌سازی کنید تا اطلاعات نمایش داده شوند.";
+    } catch (error) {
+      status.textContent = "بازیابی ناموفق بود: " + error.message;
+    }
+  }
+
+  document.getElementById("restore-merge-btn")
+    .addEventListener("click", () => restore("merge"));
+
+  document.getElementById("restore-replace-btn")
+    .addEventListener("click", () => restore("replace"));
+})();
+</script>
+
 </body>
 </html>
