@@ -439,6 +439,15 @@
   #reminder-panel button.secondary { background:#e2edf2; color:#183244; }
   #reminder-panel .muted { color:#64748b; font-size:13px; }
   #reminder-status { color:#087f8c; font-size:13px; }
+  #reminder-alert { display:none; position:fixed; inset:0; z-index:99999; background:rgba(10,25,35,.42); align-items:center; justify-content:center; padding:18px; }
+  #reminder-alert.visible { display:flex; }
+  #reminder-alert .alert-card { width:min(440px,100%); background:#fff; color:#183244; border:3px solid #087f8c; border-radius:18px; padding:24px; box-shadow:0 12px 42px #0004; text-align:center; animation:reminderPulse 1.2s ease-in-out infinite; }
+  #reminder-alert h3 { margin:0 0 10px; font-size:23px; }
+  #reminder-alert p { font-size:18px; line-height:1.7; margin:8px 0 18px; }
+  #reminder-alert button { border:0; border-radius:10px; padding:12px 18px; margin:4px; font:inherit; cursor:pointer; background:#087f8c; color:white; }
+  #reminder-alert button.secondary { background:#e2edf2; color:#183244; }
+  @keyframes reminderPulse { 0%,100% { box-shadow:0 0 0 0 #087f8c22; } 50% { box-shadow:0 0 0 9px #087f8c30; } }
+  @media (prefers-reduced-motion: reduce) { #reminder-alert .alert-card { animation:none; } }
 </style>
 <section id="reminder-panel">
   <h2>یادآوری‌های خودکار</h2>
@@ -447,6 +456,14 @@
   <button id="test-reminder-notification" class="secondary" type="button">آزمایش اعلان</button>
   <p id="reminder-status" role="status" aria-live="polite">یادآوری‌ها هنگام باز بودن صفحه بررسی می‌شوند؛ در صورت تأخیر مرورگر، تا ۱۰ دقیقه پس از موعد هم بررسی می‌شوند.</p>
 </section>
+<div id="reminder-alert" role="alertdialog" aria-modal="true" aria-labelledby="reminder-alert-title" aria-describedby="reminder-alert-message">
+  <div class="alert-card">
+    <h3 id="reminder-alert-title">🔔 زمان یادآوری رسید</h3>
+    <p id="reminder-alert-message"></p>
+    <button id="reminder-alert-dismiss" type="button">متوجه شدم</button>
+    <button id="reminder-alert-silence" class="secondary" type="button">قطع صدا</button>
+  </div>
+</div>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -456,6 +473,41 @@
     catch { return {}; }
   };
   let fired = readFired();
+  let audioContext = null;
+  let soundTimer = null;
+  function playGentleChime() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      audioContext = audioContext || new Ctx();
+      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+      if (audioContext.state !== "running") return;
+      const start = audioContext.currentTime;
+      [0, 0.32, 0.64].forEach((offset, i) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sine";
+        osc.frequency.value = [660, 784, 880][i];
+        gain.gain.setValueAtTime(0.0001, start + offset);
+        gain.gain.exponentialRampToValueAtTime(0.12, start + offset + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + offset + 0.24);
+        osc.connect(gain); gain.connect(audioContext.destination);
+        osc.start(start + offset); osc.stop(start + offset + 0.26);
+      });
+    } catch {}
+  }
+  function stopChime() { if (soundTimer) { clearInterval(soundTimer); soundTimer = null; } }
+  function showVisualAlert(message) {
+    const overlay = $("reminder-alert");
+    if (!overlay) return;
+    $("reminder-alert-message").textContent = message;
+    overlay.classList.add("visible");
+    playGentleChime();
+    stopChime();
+    // Repeat the soft chime a few times while the visible alert remains open.
+    let count = 0;
+    soundTimer = window.setInterval(() => { if (++count >= 3) { stopChime(); return; } playGentleChime(); }, 2200);
+  }
   const saveFired = () => { try { localStorage.setItem(firedKey, JSON.stringify(fired)); } catch {} };
   const status = msg => { const node = $("reminder-status"); if (node) node.textContent = msg; };
 
@@ -480,11 +532,10 @@
     fired[key] = new Date().toISOString();
     saveFired();
     status("زمان یادآوری رسید: " + title);
+    showVisualAlert(title + (body ? "\n" + body : ""));
     if ("Notification" in window && Notification.permission === "granted") {
-      try { new Notification("منشی هوشمند — یادآوری", { body: title + (body ? "\n" + body : "") }); return; } catch {}
+      try { new Notification("منشی هوشمند — یادآوری", { body: title + (body ? "\n" + body : "") }); } catch {}
     }
-    // Fallback visible while the site is open
-    window.alert("یادآوری منشی هوشمند\n" + title + (body ? "\n" + body : ""));
   }
 
   function parseLocalDateTime(value) {
@@ -513,7 +564,15 @@
     });
   }
 
-  $("enable-reminder-notifications").addEventListener("click", requestPermission);
+  $("enable-reminder-notifications").addEventListener("click", async () => {
+    // A user gesture helps browsers permit audio playback later.
+    try { const Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { audioContext = audioContext || new Ctx(); await audioContext.resume(); } } catch {}
+    await requestPermission();
+  });
+  $("reminder-alert-dismiss").addEventListener("click", () => { $("reminder-alert").classList.remove("visible"); stopChime(); });
+  $("reminder-alert-silence").addEventListener("click", stopChime);
+  window.addEventListener("focus", checkReminders);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkReminders(); });
   $("test-reminder-notification").addEventListener("click", async () => {
     const allowed = await requestPermission();
     const title = "این یک اعلان آزمایشی است.";
