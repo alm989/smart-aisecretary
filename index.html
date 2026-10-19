@@ -185,6 +185,44 @@
           date.textContent = new Date(task.date).toLocaleString("fa-IR");
           item.append(date);
         }
+        const edit = document.createElement("button");
+        edit.className = "secondary";
+        edit.textContent = "ویرایش";
+        edit.onclick = () => {
+          // Inline editor: edit only this task and preserve its completion state.
+          const editor = document.createElement("div");
+          editor.className = "task-editor";
+          const titleInput = document.createElement("input");
+          titleInput.type = "text";
+          titleInput.value = task.title || "";
+          titleInput.placeholder = "عنوان کار";
+          titleInput.setAttribute("aria-label", "ویرایش عنوان کار");
+          const dateInput = document.createElement("input");
+          dateInput.type = "datetime-local";
+          dateInput.value = task.date || "";
+          dateInput.setAttribute("aria-label", "ویرایش تاریخ و ساعت کار");
+          const saveEdit = document.createElement("button");
+          saveEdit.textContent = "ذخیره تغییرات";
+          saveEdit.onclick = () => {
+            const updatedTitle = titleInput.value.trim();
+            if (!updatedTitle) {
+              alert("لطفاً عنوان کار را وارد کنید.");
+              titleInput.focus();
+              return;
+            }
+            task.title = updatedTitle;
+            task.date = dateInput.value;
+            persist();
+            renderTasks();
+          };
+          const cancelEdit = document.createElement("button");
+          cancelEdit.className = "secondary";
+          cancelEdit.textContent = "انصراف";
+          cancelEdit.onclick = () => renderTasks();
+          editor.append(titleInput, dateInput, saveEdit, cancelEdit);
+          item.append(editor);
+          titleInput.focus();
+        };
         const toggle = document.createElement("button");
         toggle.textContent = task.done ? "انجام‌نشده" : "انجام شد";
         toggle.onclick = () => {
@@ -200,7 +238,7 @@
           persist();
           renderTasks();
         };
-        item.append(toggle, remove);
+        item.append(edit, toggle, remove);
         $("tasks").append(item);
       });
     }
