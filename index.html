@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#123b52"><title>منشی هوشمند — نسخه آزمایشی بیست‌وپنجم</title>
+<meta name="theme-color" content="#123b52"><title>منشی هوشمند — نسخه آزمایشی بیست‌وششم</title>
 <style>
 :root{--navy:#123b52;--teal:#087f8c;--bg:#f3f7f9;--line:#dce6eb;--muted:#637787;--red:#a33a3a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#183244;font-family:Tahoma,Arial,sans-serif;line-height:1.7}
@@ -37,7 +37,7 @@ button.secondary{background:#e8f0f3;color:#183244;border:1px solid var(--line)}b
     <div class="row"><button type="button" id="meeting-conflict-save">ذخیره با وجود تداخل</button><button type="button" class="secondary" id="meeting-conflict-edit">بازگشت برای اصلاح</button></div>
   </div>
 </div>
-<header><div id="org-logo-slot" aria-label="محل لوگوی سازمان" title="لوگو در تنظیمات بارگذاری می‌شود"></div><div class="datebox"><strong id="jalali-today"></strong><span id="gregorian-today"></span><span id="clock"></span></div><h1>منشی هوشمند</h1><div class="muted" style="text-align:center;font-size:.82rem">نسخه آزمایشی ۲۵ · پیشنهاد هوشمند از یادداشت‌ها</div></header>
+<header><div id="org-logo-slot" aria-label="محل لوگوی سازمان" title="لوگو در تنظیمات بارگذاری می‌شود"></div><div class="datebox"><strong id="jalali-today"></strong><span id="gregorian-today"></span><span id="clock"></span></div><h1>منشی هوشمند</h1><div class="muted" style="text-align:center;font-size:.82rem">نسخه آزمایشی ۲۶ · پیشنهاد هوشمند از یادداشت‌ها</div></header>
 <main>
 <nav aria-label="بخش‌های برنامه">
 <button class="active" data-tab="home">نمای کلی</button><button data-tab="assistant">منشی هوشمند</button><button data-tab="tasks">کارها</button><button data-tab="meetings">جلسه‌ها</button><button data-tab="notes">یادداشت‌ها</button><button data-tab="reminders">یادآوری‌ها</button><button data-tab="calendar">تقویم</button><button data-tab="settings">تنظیمات</button>
@@ -77,7 +77,7 @@ button.secondary{background:#e8f0f3;color:#183244;border:1px solid var(--line)}b
 <h2>تقویم شمسی</h2><p class="muted">برای دیدن رویدادهای یک روز، روی همان روز بزنید. نشان کوچک زیر روز یعنی مورد زمان‌بندی‌شده دارید.</p><div class="monthbar"><button id="month-prev" class="secondary">‹ ماه قبل</button><strong id="month-title"></strong><button id="month-next" class="secondary">ماه بعد ›</button></div>
 <div class="yearbar"><button id="year-prev" class="secondary" aria-label="سال قبل">− سال قبل</button><span id="calendar-year"></span><button id="year-next" class="secondary" aria-label="سال بعد">سال بعد +</button></div><div class="week"><span>شنبه</span><span>یکشنبه</span><span>دوشنبه</span><span>سه‌شنبه</span><span>چهارشنبه</span><span>پنجشنبه</span><span>جمعه</span></div><div id="calendar-days" class="days"></div><h3 id="selected-day-title">موارد روز انتخاب‌شده</h3><div id="calendar-list" class="list"></div></section>
 
-<section class="panel" id="panel-settings"><h2>تنظیمات</h2><h3>لوگوی سازمان یا شخص</h3><p class="muted">محل لوگو در سربرگ همیشه رزرو است، اما تا زمانی که لوگویی بارگذاری نکنید چیزی نمایش داده نمی‌شود. لوگو فقط در همین مرورگر ذخیره می‌شود.</p><label for="org-logo-file">بارگذاری لوگو (PNG، JPG یا WebP)</label><input id="org-logo-file" type="file" accept="image/png,image/jpeg,image/webp"><div class="row"><button type="button" id="org-logo-save">ذخیره لوگو</button><button type="button" class="secondary" id="org-logo-remove">حذف لوگو</button></div><div id="org-logo-preview" class="statusline" role="status">هنوز لوگویی ثبت نشده است.</div><hr><h3>پشتیبان‌گیری و بازیابی</h3><p class="muted">نسخه پشتیبان شامل کارها، جلسه‌ها، یادداشت‌ها، یادآوری‌ها و تنظیمات برنامه (از جمله لوگو) است. هر فایل HTML جداگانه ممکن است فضای ذخیره‌سازی جداگانه‌ای داشته باشد؛ برای انتقال اطلاعات به این نسخه، ابتدا فایل JSON سالم را بازیابی کنید و سپس پشتیبان تازه بگیرید. فایل JSON قبلی را در جای امن نگه دارید.</p><button id="backup-export">دریافت نسخه پشتیبان</button><label for="backup-file">بازیابی از فایل پشتیبان JSON</label><input id="backup-file" type="file" accept=".json,application/json"><label><input id="backup-merge" type="checkbox" style="width:auto"> افزودن اطلاعات پشتیبان به اطلاعات فعلی (به‌جای جایگزینی)</label><button id="backup-import">بازیابی پشتیبان</button><div id="backup-status" class="statusline" role="status"></div><p class="muted">یادآوری‌های مرورگر فقط وقتی برنامه باز است قابل اتکاست؛ پس از بستن صفحه، اعلان در پس‌زمینه تضمین نمی‌شود.</p></section>
+<section class="panel" id="panel-settings"><h2>تنظیمات</h2><h3>لوگوی سازمان یا شخص</h3><p class="muted">محل لوگو در سربرگ همیشه رزرو است، اما تا زمانی که لوگویی بارگذاری نکنید چیزی نمایش داده نمی‌شود. لوگو فقط در همین مرورگر ذخیره می‌شود.</p><label for="org-logo-file">بارگذاری لوگو (PNG، JPG یا WebP)</label><input id="org-logo-file" type="file" accept="image/png,image/jpeg,image/webp"><div class="row"><button type="button" id="org-logo-save">ذخیره لوگو</button><button type="button" class="secondary" id="org-logo-remove">حذف لوگو</button></div><div id="org-logo-preview" class="statusline" role="status">هنوز لوگویی ثبت نشده است.</div><hr><h3>پشتیبان‌گیری و بازیابی</h3><p class="muted">نسخه پشتیبان شامل کارها، جلسه‌ها، یادداشت‌ها، یادآوری‌ها و تنظیمات برنامه (از جمله لوگو) است. در حالت افزودن اطلاعات، لوگوی موجود در پشتیبان نیز وارد می‌شود. هر فایل HTML جداگانه ممکن است فضای ذخیره‌سازی جداگانه‌ای داشته باشد؛ برای انتقال اطلاعات به این نسخه، ابتدا فایل JSON سالم را بازیابی کنید و سپس پشتیبان تازه بگیرید. فایل JSON قبلی را در جای امن نگه دارید.</p><button id="backup-export">دریافت نسخه پشتیبان</button><label for="backup-file">بازیابی از فایل پشتیبان JSON</label><input id="backup-file" type="file" accept=".json,application/json"><label><input id="backup-merge" type="checkbox" style="width:auto"> افزودن اطلاعات پشتیبان به اطلاعات فعلی (به‌جای جایگزینی)</label><button id="backup-import">بازیابی پشتیبان</button><div id="backup-status" class="statusline" role="status"></div><p class="muted">یادآوری‌های مرورگر فقط وقتی برنامه باز است قابل اتکاست؛ پس از بستن صفحه، اعلان در پس‌زمینه تضمین نمی‌شود.</p></section>
 </main>
 <script>
 (()=>{'use strict';
@@ -184,13 +184,13 @@ $('backup-export').onclick=()=>{
   try{
     const data=readBackupData();
     const total=data.tasks.length+data.notes.length+data.meetings.length+data.reminders.length;
-    if(total===0){
-      backupWarn('هشدار: در فضای ذخیره‌سازی همین فایل هیچ موردی پیدا نشد؛ فایل خالی ساخته نشد. اگر اطلاعات در فایل HTML دیگری است، همان فایل را باز کنید یا فایل JSON پشتیبان سالم را ابتدا از بخش بازیابی وارد این نسخه کنید.');
+    if(total===0 && (!appSettings || Object.keys(appSettings).length===0)){
+      backupWarn('هشدار: در فضای ذخیره‌سازی این فایل هیچ اطلاعات یا تنظیماتی پیدا نشد؛ فایل خالی ساخته نشد.');
       return;
     }
     const payload={
-      version:4,
-      settings:appSettings,
+      version:5,
+      settings:{...appSettings},
       tasks:data.tasks,
       notes:data.notes,
       meetings:data.meetings,
@@ -235,8 +235,8 @@ $('backup-import').onclick=async()=>{
       reminders:Array.isArray(d.reminders)?d.reminders:[]
     };
     const total=incoming.tasks.length+incoming.notes.length+incoming.meetings.length+incoming.reminders.length;
-    if(total===0){
-      backupWarn('این فایل پشتیبان هیچ کار، یادداشت، جلسه یا یادآوری‌ای ندارد؛ بازیابی لغو شد تا اطلاعات فعلی ناخواسته پاک نشوند.');
+    if(total===0 && (!d.settings || typeof d.settings!=='object' || Array.isArray(d.settings) || Object.keys(d.settings).length===0)){
+      backupWarn('این فایل پشتیبان هیچ اطلاعات یا تنظیماتی ندارد؛ بازیابی لغو شد تا اطلاعات فعلی ناخواسته پاک نشوند.');
       return;
     }
     const merge=$('backup-merge').checked;
@@ -269,14 +269,24 @@ $('backup-import').onclick=async()=>{
       }
       norm();
       saveAll();
-      if(!merge && d.settings && typeof d.settings==='object' && !Array.isArray(d.settings)){
-        appSettings={...d.settings};
-        localStorage.setItem(SETTINGS_KEY,JSON.stringify(appSettings));
-        renderOrgLogo();
+      let settingsRestored=false;
+      if(d.settings && typeof d.settings==='object' && !Array.isArray(d.settings)){
+        if(!merge){
+          appSettings={...d.settings};
+          settingsRestored=true;
+        }else if(typeof d.settings.logoData==='string' && d.settings.logoData.length>0){
+          // In merge mode, import a supplied logo without erasing other current settings.
+          appSettings={...appSettings,logoData:d.settings.logoData};
+          settingsRestored=true;
+        }
+        if(settingsRestored){
+          localStorage.setItem(SETTINGS_KEY,JSON.stringify(appSettings));
+          renderOrgLogo();
+        }
       }
       const saved=readBackupData();
       const savedTotal=saved.tasks.length+saved.notes.length+saved.meetings.length+saved.reminders.length;
-      if(savedTotal===0)throw new Error('save failed');
+      if(savedTotal===0 && !settingsRestored)throw new Error('save failed');
       renderAll();
       $('backup-status').classList.remove('warning');
       $('backup-status').textContent='بازیابی انجام شد و اطلاعات دوباره از فضای ذخیره‌سازی خوانده شد. '+backupCounts(saved);
