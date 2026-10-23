@@ -1,1 +1,103 @@
 
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بررسی امن منشی هوشمند - نسخه 34</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      max-width: 760px;
+      margin: 30px auto;
+      padding: 20px;
+      line-height: 2;
+      background: #f5f7fa;
+      color: #202938;
+    }
+    section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-wrap: anywhere;
+    }
+    h1 { font-size: 1.35rem; }
+    .note { color: #475569; }
+    li { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <section>
+    <h1>بررسی امن ذخیره‌سازی منشی هوشمند</h1>
+    <p class="note">
+      این صفحه فقط وضعیت کلیدهای ذخیره‌سازی را می‌خواند.
+      محتوا نمایش داده نمی‌شود و هیچ چیزی تغییر یا حذف نمی‌شود.
+    </p>
+    <p id="status">در حال بررسی...</p>
+    <ul id="results"></ul>
+  </section>
+
+  <script>
+    (() => {
+      const keys = [
+        "secretary_tasks",
+        "secretary_notes",
+        "secretary_events",
+        "secretary_reminders",
+        "secretary_app_settings_v1",
+        "secretary_reminders_fired_v1"
+      ];
+
+      const status = document.getElementById("status");
+      const results = document.getElementById("results");
+
+      try {
+        const rows = keys.map(key => {
+          const value = localStorage.getItem(key);
+          let count = "قابل شمارش نیست";
+
+          if (value !== null) {
+            try {
+              const parsed = JSON.parse(value);
+              if (Array.isArray(parsed)) count = parsed.length;
+              else if (parsed && typeof parsed === "object") {
+                count = Object.keys(parsed).length;
+              } else {
+                count = "داده موجود است";
+              }
+            } catch (_) {
+              count = "داده موجود است";
+            }
+          }
+
+          return {
+            key,
+            exists: value !== null,
+            bytes: value === null
+              ? 0
+              : new Blob([value]).size,
+            count
+          };
+        });
+
+        rows.forEach(row => {
+          const li = document.createElement("li");
+          li.textContent =
+            row.key + " — " +
+            (row.exists ? "موجود" : "یافت نشد") +
+            " — حجم: " + row.bytes + " بایت" +
+            " — تعداد تقریبی: " + row.count;
+          results.appendChild(li);
+        });
+
+        status.textContent =
+          "بررسی تمام شد. فقط وضعیت ذخیره‌سازی خوانده شد.";
+      } catch (_) {
+        status.textContent =
+          "مرورگر اجازه خواندن ذخیره‌سازی را نداد.";
+      }
+    })();
+  </script>
+</body>
+</html>
+
